@@ -1,0 +1,4 @@
+simpleai
+PySide6
+matplotlib
+numpy
