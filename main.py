@@ -1,12 +1,10 @@
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtQml import QQmlApplicationEngine
+# main.py
+import sys
+from PySide6.QtWidgets import QApplication
+from gui.main_window import MainWindow
 
-app = QGuiApplication([])
-engine = QQmlApplicationEngine()
-
-engine.load("gui/main.qml")
-
-if not engine.rootObjects():
-    raise SystemExit("QML file not loaded correctly!")
-
-app.exec()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
