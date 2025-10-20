@@ -1,4 +1,4 @@
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QFileSystemWatcher, QObject, QUrl, QTimer
 from PySide6.QtQuick import QQuickWindow
@@ -57,8 +57,13 @@ class HotReloadManager(QObject):
     def load_qml(self):
         """Load QML lần đầu"""
         print("[Hot-reload] Loading QML...")
+
+        # thêm import path cho thư viện QML con
         self.engine.load(QUrl.fromLocalFile(str(self.qml_entry)))
+
         if not self.engine.rootObjects():
+            for e in self.engine.errors(): # type: ignore
+                print("[QML ERROR]", e.toString())
             print("[Hot-reload] Failed to load QML.")
             return
 
@@ -90,7 +95,7 @@ class HotReloadManager(QObject):
         print("Reloading QML...")
         self.close_old_windows()
 
-        self.engine = QQmlApplicationEngine()
+        self.engine.clearComponentCache()
         self.engine.load(QUrl.fromLocalFile(str(self.qml_entry)))
         
         if self.engine.rootObjects():
@@ -110,7 +115,7 @@ class HotReloadManager(QObject):
 
 
 def main():
-    app = QGuiApplication(sys.argv)
+    app = QApplication(sys.argv)
 
     qml_main = "gui/main.qml"
     qml_dir = "gui"
