@@ -1,20 +1,152 @@
-import QtQuick 2.15
-import QtCharts 2.15
+import QtCharts
+import QtQuick.Controls
+import QtQuick
 
 ChartView {
-    id: chart
-    title: "Biểu đồ kết quả"
+    id: root
     antialiasing: true
-    legend.visible: true
+    legend.visible: false
+    margins.top: 1
+    margins.bottom: 1
+    margins.left: 1
+    margins.right: 1
+
+    property double padding: 1.0
+    property color pointColor: "red"
+    property color lineColor: "red"
+    property alias axisX: axisX
+    property alias axisY: axisY
+
+    ValueAxis {
+        id: axisX
+        min: 0
+        max: 1
+    }
+
+    ValueAxis {
+        id: axisY
+        min: 0
+        max: 1
+    }
 
     LineSeries {
-        name: "Fitness"
-        color: "steelblue"
+        id: lineSeries
+        axisX: axisX
+        axisY: axisY
+        color: root.lineColor
+        width: 2
 
-        XYPoint { x: 0; y: 10 }
-        XYPoint { x: 1; y: 8 }
-        XYPoint { x: 2; y: 6 }
-        XYPoint { x: 3; y: 4 }
-        XYPoint { x: 4; y: 3 }
+        onPointAdded: index => {
+            Qt.callLater(() => {
+                const pt = at(index);
+
+                if (pt.x < axisX.min + root.padding)
+                    axisX.min = pt.x - root.padding;
+                if (pt.x > axisX.max - root.padding)
+                    axisX.max = pt.x + root.padding;
+                if (pt.y < axisY.min + root.padding)
+                    axisY.min = pt.y - root.padding;
+                if (pt.y > axisY.max - root.padding)
+                    axisY.max = pt.y + root.padding;
+            });
+        }
+    }
+
+    ScatterSeries {
+        id: pointSeries
+        axisX: axisX
+        axisY: axisY
+        color: root.pointColor
+        borderColor: "transparent"
+        markerSize: 6
+    }
+
+    Behavior on axisX.max {
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on axisX.min {
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on axisY.max {
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on axisY.min {
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    // WheelHandler {
+    //     id: wheelZoom
+    //     acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+    //     onWheel: event => {
+    //         const zoomFactor = event.angleDelta.y > 0 ? 0.9 : 1.1; // phóng to / thu nhỏ
+    //         const centerX = (axisX.max + axisX.min) / 2;
+    //         const centerY = (axisY.max + axisY.min) / 2;
+
+    //         const rangeX = (axisX.max - axisX.min) * zoomFactor;
+    //         const rangeY = (axisY.max - axisY.min) * zoomFactor;
+
+    //         axisX.min = centerX - rangeX / 2;
+    //         axisX.max = centerX + rangeX / 2;
+    //         axisY.min = centerY - rangeY / 2;
+    //         axisY.max = centerY + rangeY / 2;
+
+    //         event.accepted = true;
+    //     }
+    // }
+
+    function addPoint(x, y) {
+        lineSeries.append(x, y);
+        pointSeries.append(x, y);
+    }
+
+    function getAllPoints() {
+        const pts = [];
+        for (let i = 0; i < lineSeries.count; i++)
+            pts.push(lineSeries.at(pts));
+    }
+
+    Button {
+        text: "Thêm ngẫu nhiên"
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        onClicked: {
+            let x = lineSeries.count;
+            let y = Math.random() * 10;
+
+            root.addPoint(x, y);
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: mouse => {
+            // Lấy toạ độ pixel của chuột
+            var mousePoint = Qt.point(mouse.x, mouse.y);
+
+            var plot = root.plotArea;
+
+            if (!(mousePoint.x >= plot.x && mousePoint.x <= plot.x + plot.width && mousePoint.y >= plot.y && mousePoint.y <= plot.y + plot.height))
+                return;
+
+            // Chuyển sang toạ độ thực tế của trục
+            var chartPoint = root.mapToValue(mousePoint, lineSeries);
+
+            // Thêm điểm vào series
+            lineSeries.append(chartPoint.x, chartPoint.y);
+
+            console.log("Added point:", chartPoint.x, chartPoint.y);
+        }
     }
 }
