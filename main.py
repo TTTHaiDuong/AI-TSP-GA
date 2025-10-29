@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     app.setWindowIcon(QIcon("gui/assets/app_icon.svg"))
     
-    engine.load(QUrl("gui/Main.qml"))
+    engine.load(QUrl("gui/main.qml"))
     if not engine.rootObjects():
         sys.exit(-1)
 
