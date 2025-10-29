@@ -16,6 +16,8 @@ ChartView {
     property color lineColor: "red"
     property alias axisX: axisX
     property alias axisY: axisY
+    property alias lines: lineSeries
+    property alias points: pointSeries
 
     ValueAxis {
         id: axisX
@@ -59,6 +61,21 @@ ChartView {
         color: root.pointColor
         borderColor: "transparent"
         markerSize: 6
+
+        onHovered: function (point, state) {
+            if (state) {
+                tooltip.text = `(${point.x.toFixed(2)}, ${point.y.toFixed(2)})`;
+                tooltip.visible = true;
+                tooltip.x = root.mapToPosition(point, pointSeries).x + 10;
+                tooltip.y = root.mapToPosition(point, pointSeries).y - 20;
+            } else {
+                tooltip.visible = false;
+            }
+        }
+    }
+
+    Tooltip {
+        id: tooltip
     }
 
     Behavior on axisX.max {
@@ -106,17 +123,6 @@ ChartView {
     //     }
     // }
 
-    function addPoint(x, y) {
-        lineSeries.append(x, y);
-        pointSeries.append(x, y);
-    }
-
-    function getAllPoints() {
-        const pts = [];
-        for (let i = 0; i < lineSeries.count; i++)
-            pts.push(lineSeries.at(pts));
-    }
-
     Button {
         text: "Thêm ngẫu nhiên"
         anchors.bottom: parent.bottom
@@ -125,28 +131,29 @@ ChartView {
             let x = lineSeries.count;
             let y = Math.random() * 10;
 
-            root.addPoint(x, y);
+            lineSeries.append(x, y);
+            pointSeries.append(x, y);
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: mouse => {
-            // Lấy toạ độ pixel của chuột
-            var mousePoint = Qt.point(mouse.x, mouse.y);
+    // MouseArea {
+    //     anchors.fill: parent
+    //     onClicked: mouse => {
+    //         // Lấy toạ độ pixel của chuột
+    //         var mousePoint = Qt.point(mouse.x, mouse.y);
 
-            var plot = root.plotArea;
+    //         var plot = root.plotArea;
 
-            if (!(mousePoint.x >= plot.x && mousePoint.x <= plot.x + plot.width && mousePoint.y >= plot.y && mousePoint.y <= plot.y + plot.height))
-                return;
+    //         if (!(mousePoint.x >= plot.x && mousePoint.x <= plot.x + plot.width && mousePoint.y >= plot.y && mousePoint.y <= plot.y + plot.height))
+    //             return;
 
-            // Chuyển sang toạ độ thực tế của trục
-            var chartPoint = root.mapToValue(mousePoint, lineSeries);
+    //         // Chuyển sang toạ độ thực tế của trục
+    //         var chartPoint = root.mapToValue(mousePoint, lineSeries);
 
-            // Thêm điểm vào series
-            lineSeries.append(chartPoint.x, chartPoint.y);
+    //         // Thêm điểm vào series
+    //         lineSeries.append(chartPoint.x, chartPoint.y);
 
-            console.log("Added point:", chartPoint.x, chartPoint.y);
-        }
-    }
+    //         console.log("Added point:", chartPoint.x, chartPoint.y);
+    //     }
+    // }
 }

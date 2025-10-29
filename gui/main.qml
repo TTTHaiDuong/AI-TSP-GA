@@ -277,7 +277,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
-                        FitnessChart {
+                        RouteMap {
                             id: routeChart
                             title: "Route"
                             anchors.left: parent.left
@@ -286,7 +286,7 @@ ApplicationWindow {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        FitnessChart {
+                        Chart {
                             id: fitnessChart
                             title: "Fitness"
                             anchors.right: parent.right
