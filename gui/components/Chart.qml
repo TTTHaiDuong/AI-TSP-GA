@@ -156,4 +156,20 @@ ChartView {
     //         console.log("Added point:", chartPoint.x, chartPoint.y);
     //     }
     // }
+    // Hàm để xóa dữ liệu cũ
+    function clear() {
+        lineSeries.clear();
+        pointSeries.clear();
+        // Reset trục tọa độ về giá trị ban đầu
+        axisX.min = 0;
+        axisX.max = 1;
+        axisY.min = 0;
+        axisY.max = 1;
+    }
+
+    // Hàm để thêm một điểm mới (cho dễ gọi từ bên ngoài)
+    function addPoint(x, y) {
+        lineSeries.append(x, y);
+        pointSeries.append(x, y);
+    }
 }

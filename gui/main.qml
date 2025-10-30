@@ -6,7 +6,8 @@ import "components"
 
 ApplicationWindow {
     id: root
-    title: "TSP Solver"
+    visible: true
+    title: "TSP Solver using Genetic Algorithm"
     width: 1200
     height: 800
     color: Theme.background
@@ -80,7 +81,6 @@ ApplicationWindow {
                                 Label {
                                     text: "Khởi tạo các điểm.\nNhấn vào nút \"Generate\" để sử dụng chức năng sinh ngẫu nhiên\nhoặc thao tác trực tiếp trên Route Map."
                                     wrapMode: Text.WordWrap
-                                    // color: "#555555ff"
                                 }
 
                                 GridLayout {
@@ -89,17 +89,10 @@ ApplicationWindow {
                                     columnSpacing: 30
                                     rowSpacing: 0
 
-                                    Label {
-                                        text: "Nodes"
-                                    }
-
-                                    Label {
-                                        text: "Seed"
-                                    }
-
+                                    Label { text: "Nodes" }
+                                    Label { text: "Seed" }
                                     Item {}
 
-                                    // --- Nodes SpinBox ---
                                     MaterialSpinBox {
                                         id: nodeCount
                                         implicitWidth: 100
@@ -108,7 +101,6 @@ ApplicationWindow {
                                         value: 20
                                     }
 
-                                    // --- Seed SpinBox ---
                                     MaterialSpinBox {
                                         id: seedInput
                                         implicitWidth: 100
@@ -126,12 +118,12 @@ ApplicationWindow {
                                         background: Rectangle {
                                             color: "#cccccc"
                                             radius: 8
-                                            border.width: 1
-                                            border.color: "transparent"
                                         }
 
+                                        // SỬA LỖI: onClicked được đặt đúng bên trong Button
                                         onClicked: {
-                                            console.log(chartBridge.from_message("Hello Python!"));
+                                            // Gọi hàm trong Python controller
+                                            appController.generate_cities(nodeCount.value, seedInput.value)
                                         }
                                     }
                                 }
@@ -148,17 +140,14 @@ ApplicationWindow {
                                 spacing: 30
 
                                 Label {
-                                    text: "Generate the topology however you like by adjusting these parameters.\nThe app will keep a highscore for every different topology created."
+                                    text: "Điều chỉnh các tham số của thuật toán."
                                     wrapMode: Text.WordWrap
                                     color: "#555555ff"
                                 }
 
                                 ColumnLayout {
                                     spacing: 0
-                                    Label {
-                                        text: "Algorithm"
-                                    }
-
+                                    Label { text: "Algorithm" }
                                     MaterialComboxBox {
                                         id: algoBox
                                         model: ["Genetic", "PSO"]
@@ -166,6 +155,7 @@ ApplicationWindow {
                                 }
 
                                 // Chế độ nhập tham số GA
+                                // SỬA LỖI: Bỏ Repeater, dùng ID trực tiếp cho an toàn
                                 Item {
                                     visible: algoBox.currentText === "Genetic"
                                     Layout.fillWidth: true
@@ -175,48 +165,59 @@ ApplicationWindow {
                                         id: genFlow
                                         width: varMenu.width
                                         spacing: 30
-                                        Repeater {
-                                            model: ["Population size", "Generations", "Crossover rate", "Mutation rate"]
-                                            delegate: ColumnLayout {
-                                                width: 140
-                                                spacing: 0
-                                                Label {
-                                                    text: modelData
-                                                }
-                                                MaterialSpinBox {
-                                                    from: 0
-                                                    to: 9999
-                                                    value: 3
-                                                }
-                                            }
+
+                                        ColumnLayout {
+                                            width: 140; spacing: 0
+                                            Label { text: "Population size" }
+                                            MaterialSpinBox { id: popSizeInput; from: 10; to: 9999; value: 100 }
+                                        }
+                                        ColumnLayout {
+                                            width: 140; spacing: 0
+                                            Label { text: "Generations" }
+                                            MaterialSpinBox { id: generationsInput; from: 10; to: 9999; value: 500 }
+                                        }
+                                        ColumnLayout {
+                                            width: 140; spacing: 0
+                                            Label { text: "Crossover rate (%)" } // Thêm (%) vào nhãn
+                                            MaterialSpinBox { id: crossoverInput; from: 0; to: 100; value: 90 } // Dùng giá trị nguyên: 0-100
+                                        }
+                                        ColumnLayout {
+                                            width: 140; spacing: 0
+                                            Label { text: "Mutation rate (%)" } // Thêm (%) vào nhãn
+                                            MaterialSpinBox { id: mutationInput; from: 0; to: 100; value: 1 } // Dùng giá trị nguyên: 0-100
                                         }
                                     }
                                 }
 
-                                // Chế độ nhập các tham số PSO
+                                // Chế độ nhập các tham số PSO (chưa sử dụng)
                                 Item {
                                     visible: algoBox.currentText === "PSO"
                                     Layout.fillWidth: true
-                                    implicitHeight: psoFlow.implicitHeight
+                                    // ...
+                                }
 
-                                    Flow {
-                                        id: psoFlow
-                                        width: varMenu.width
-                                        spacing: 30
-                                        Repeater {
-                                            model: ["Swarm size", "Initial Velocity", "Inertia Weight", "Cognitive Coefficient", "Social Coefficient", "Velocity Clamping", "Number of Iterations"]
-                                            delegate: ColumnLayout {
-                                                width: 140
-                                                spacing: 0
-                                                Label {
-                                                    text: modelData
-                                                }
-                                                MaterialSpinBox {
-                                                    from: 0
-                                                    to: 9999
-                                                    value: 3
-                                                }
+                                // Nút để chạy thuật toán
+                                Button {
+                                    id: runButton
+                                    text: "Run Algorithm"
+                                    Layout.topMargin: 20
+                                    Layout.alignment: Qt.AlignHCenter
+                                    implicitWidth: 200
+                                    implicitHeight: 45
+                                    background: Rectangle { color: "#4CAF50"; radius: 8 }
+
+                                    onClicked: {
+                                        if (algoBox.currentText === "Genetic") {
+                                            var gaParams = {
+                                                "populationSize": popSizeInput.value,
+                                                "generations": generationsInput.value,
+                                                // Chia cho 100.0 để chuyển thành số thập phân
+                                                "crossoverRate": crossoverInput.value / 100.0, // Gửi đi 0.9
+                                                "mutationRate": mutationInput.value / 100.0   // Gửi đi 0.01
                                             }
+                                            appController.run_ga(gaParams)
+                                        } else {
+                                            console.log("PSO not implemented yet.")
                                         }
                                     }
                                 }
@@ -239,50 +240,25 @@ ApplicationWindow {
 
                     TabBar {
                         id: chartsBar
-                        width: implicitWidth
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        padding: 0
-                        anchors.margins: 0
-                        Material.accent: Theme.onFocus
-
-                        TabButton {
-                            text: "Route and fitness"
-                            width: 150
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                        }
-                        TabButton {
-                            text: "History"
-                            width: 100
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                        }
-                        TabButton {
-                            text: "Benchmark"
-                            width: 100
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                        }
+                        // ...
+                        TabButton { text: "Route and fitness" }
+                        TabButton { text: "History" }
+                        TabButton { text: "Benchmark" }
                     }
                 }
 
                 StackLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-
                     currentIndex: chartsBar.currentIndex
 
                     Item {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
                         RouteMap {
                             id: routeChart
                             title: "Route"
                             anchors.left: parent.left
                             width: parent.width / 2
-                            height: width * 1.2
+                            height: parent.height
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
@@ -291,7 +267,7 @@ ApplicationWindow {
                             title: "Fitness"
                             anchors.right: parent.right
                             width: parent.width / 2
-                            height: width * 1.2
+                            height: parent.height
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
@@ -300,12 +276,25 @@ ApplicationWindow {
         }
     }
 
-    // --- Kết nối QML với Python ---
+    // --- Kết nối QML với Python Controller ---
     Connections {
-        target: chartBridge
+        target: appController // Đổi tên thành appController
 
-        function onPointAdded(pt) {
+        function onUpdateFitnessChart(pt) {
             fitnessChart.addPoint(pt.x, pt.y);
+        }
+
+        function onDrawNodesOnMap(nodes) {
+            routeChart.drawNodes(nodes);
+        }
+
+        function onDrawRouteOnMap(route) {
+            routeChart.drawRoute(route);
+        }
+
+        function onClearCharts() {
+            fitnessChart.clear();
+            routeChart.clear();
         }
     }
 }
