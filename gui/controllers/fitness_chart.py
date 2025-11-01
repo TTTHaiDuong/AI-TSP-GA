@@ -1,7 +1,7 @@
 # gui/controllers/fitness.py
 from PySide6.QtCore import QObject, Signal, Slot, QPointF
 
-class ChartBridge(QObject):
+class FitnessBridge(QObject):
     # Tín hiệu gửi list điểm (dạng [{x:..., y:...}, ...]) sang QML
     pointAdded = Signal(QPointF)
 

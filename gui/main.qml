@@ -84,17 +84,31 @@ ApplicationWindow {
                                 }
 
                                 GridLayout {
+                                    id: randParamsGrid
                                     columns: 3
                                     rows: 2
                                     columnSpacing: 30
                                     rowSpacing: 0
 
                                     Label {
+                                        id: nodeLb
                                         text: "Nodes"
                                     }
 
-                                    Label {
-                                        text: "Seed"
+                                    Item {
+                                        implicitWidth: 100
+                                        implicitHeight: 16
+
+                                        CheckBox {
+                                            id: seedCheck
+                                            z: 10
+                                            text: "Seed"
+                                            checked: true
+                                            Material.accent: Theme.onFocus
+                                            padding: 0
+                                            verticalPadding: 0
+                                        }
+                                        z: 1
                                     }
 
                                     Item {}
@@ -115,6 +129,13 @@ ApplicationWindow {
                                         from: 0
                                         to: 9999
                                         value: 3
+                                        enabled: seedCheck.checked
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            color: "white"
+                                            opacity: parent.enabled ? 0 : 0.6
+                                        }
                                     }
 
                                     Button {
@@ -131,7 +152,9 @@ ApplicationWindow {
                                         }
 
                                         onClicked: {
-                                            console.log(chartBridge.from_message("Hello Python!"));
+                                            const seed = seedCheck.checked ? seedInput.value : undefined;
+                                            const nodesList = routeBridge.randomize(nodeCount.value, seed);
+                                            routeMap.setNodes(nodesList);
                                         }
                                     }
                                 }
@@ -150,7 +173,7 @@ ApplicationWindow {
                                 Label {
                                     text: "Generate the topology however you like by adjusting these parameters.\nThe app will keep a highscore for every different topology created."
                                     wrapMode: Text.WordWrap
-                                    color: "#555555ff"
+                                    color: "#555555"
                                 }
 
                                 ColumnLayout {
@@ -278,8 +301,7 @@ ApplicationWindow {
                         Layout.fillHeight: true
 
                         RouteMap {
-                            id: routeChart
-                            title: "Route"
+                            id: routeMap
                             anchors.left: parent.left
                             width: parent.width / 2
                             height: width * 1.2
@@ -302,10 +324,18 @@ ApplicationWindow {
 
     // --- Kết nối QML với Python ---
     Connections {
-        target: chartBridge
+        target: fitnessBridge
 
         function onPointAdded(pt) {
             fitnessChart.addPoint(pt.x, pt.y);
+        }
+    }
+
+    Connections {
+        target: routeBridge
+
+        function onRandomized(nodesList) {
+            routeMap.setNodes(nodesList);
         }
     }
 }

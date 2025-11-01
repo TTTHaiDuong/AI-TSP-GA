@@ -38,20 +38,7 @@ ChartView {
         color: root.lineColor
         width: 2
 
-        onPointAdded: index => {
-            Qt.callLater(() => {
-                const pt = at(index);
-
-                if (pt.x < axisX.min + root.padding)
-                    axisX.min = pt.x - root.padding;
-                if (pt.x > axisX.max - root.padding)
-                    axisX.max = pt.x + root.padding;
-                if (pt.y < axisY.min + root.padding)
-                    axisY.min = pt.y - root.padding;
-                if (pt.y > axisY.max - root.padding)
-                    axisY.max = pt.y + root.padding;
-            });
-        }
+        onPointAdded: index => root._rescaleArea(at, index)
     }
 
     ScatterSeries {
@@ -61,6 +48,8 @@ ChartView {
         color: root.pointColor
         borderColor: "transparent"
         markerSize: 6
+
+        onPointAdded: index => root._rescaleArea(at, index)
 
         onHovered: function (point, state) {
             if (state) {
@@ -103,6 +92,28 @@ ChartView {
         }
     }
 
+    function _rescaleArea(get, index) {
+        Qt.callLater(() => {
+            if (!root.padding)
+                return;
+            const pt = get(index);
+            const pad = root.padding;
+
+            if (index === 0) {
+                axisX.min = pt.x - pad;
+                axisX.max = pt.x + pad;
+                axisY.min = pt.y - pad;
+                axisY.max = pt.y + pad;
+                return;
+            }
+
+            axisX.min = Math.min(axisX.min, pt.x - pad);
+            axisX.max = Math.max(axisX.max, pt.x + pad);
+            axisY.min = Math.min(axisY.min, pt.y - pad);
+            axisY.max = Math.max(axisY.max, pt.y + pad);
+        });
+    }
+
     // WheelHandler {
     //     id: wheelZoom
     //     acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -129,7 +140,7 @@ ChartView {
         anchors.horizontalCenter: parent.horizontalCenter
         onClicked: {
             let x = lineSeries.count;
-            let y = Math.random() * 10;
+            let y = Math.random() * 50;
 
             lineSeries.append(x, y);
             pointSeries.append(x, y);
