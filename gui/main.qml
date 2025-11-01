@@ -253,7 +253,7 @@ ApplicationWindow {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.preferredWidth: 0.6
+                Layout.preferredWidth: 0.5
 
                 Rectangle {
                     Layout.fillWidth: true
@@ -296,27 +296,40 @@ ApplicationWindow {
 
                     currentIndex: chartsBar.currentIndex
 
-                    Item {
+                    RowLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
                         RouteMap {
                             id: routeMap
-                            anchors.left: parent.left
-                            width: parent.width / 2
-                            height: width * 1.2
-                            anchors.verticalCenter: parent.verticalCenter
+                            implicitWidth: 400
+                            implicitHeight: 400
+                        }
+                        Item {
+                            Layout.fillWidth: true
                         }
 
                         Chart {
                             id: fitnessChart
                             title: "Fitness"
-                            anchors.right: parent.right
-                            width: parent.width / 2
-                            height: width * 1.2
-                            anchors.verticalCenter: parent.verticalCenter
+                            implicitWidth: 400
+                            implicitHeight: 400
+                        }
+
+                        Item {
+                            Layout.fillWidth: true
                         }
                     }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 160
+                    color: "red"
                 }
             }
         }
