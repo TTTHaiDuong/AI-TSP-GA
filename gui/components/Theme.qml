@@ -19,4 +19,5 @@ QtObject {
     property color onFocus: "#00a2ff"
     property color unFocus: "#cccccc"
     property color background: "#FAFAFA"
+    property color primaryLight: "#BBDEFB"
 }

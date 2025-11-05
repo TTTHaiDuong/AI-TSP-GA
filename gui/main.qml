@@ -6,8 +6,7 @@ import "components"
 
 ApplicationWindow {
     id: root
-    visible: true
-    title: "TSP Solver using Genetic Algorithm"
+    title: "TSP Solver"
     width: 1200
     height: 800
     color: Theme.background
@@ -81,18 +80,40 @@ ApplicationWindow {
                                 Label {
                                     text: "Khởi tạo các điểm.\nNhấn vào nút \"Generate\" để sử dụng chức năng sinh ngẫu nhiên\nhoặc thao tác trực tiếp trên Route Map."
                                     wrapMode: Text.WordWrap
+                                    // color: "#555555ff"
                                 }
 
                                 GridLayout {
+                                    id: randParamsGrid
                                     columns: 3
                                     rows: 2
                                     columnSpacing: 30
                                     rowSpacing: 0
 
-                                    Label { text: "Nodes" }
-                                    Label { text: "Seed" }
+                                    Label {
+                                        id: nodeLb
+                                        text: "Nodes"
+                                    }
+
+                                    Item {
+                                        implicitWidth: 100
+                                        implicitHeight: 16
+
+                                        CheckBox {
+                                            id: seedCheck
+                                            z: 10
+                                            text: "Seed"
+                                            checked: true
+                                            Material.accent: Theme.onFocus
+                                            padding: 0
+                                            verticalPadding: 0
+                                        }
+                                        z: 1
+                                    }
+
                                     Item {}
 
+                                    // --- Nodes SpinBox ---
                                     MaterialSpinBox {
                                         id: nodeCount
                                         implicitWidth: 100
@@ -101,12 +122,20 @@ ApplicationWindow {
                                         value: 20
                                     }
 
+                                    // --- Seed SpinBox ---
                                     MaterialSpinBox {
                                         id: seedInput
                                         implicitWidth: 100
                                         from: 0
                                         to: 9999
                                         value: 3
+                                        enabled: seedCheck.checked
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            color: "white"
+                                            opacity: parent.enabled ? 0 : 0.6
+                                        }
                                     }
 
                                     Button {
@@ -118,12 +147,14 @@ ApplicationWindow {
                                         background: Rectangle {
                                             color: "#cccccc"
                                             radius: 8
+                                            border.width: 1
+                                            border.color: "transparent"
                                         }
 
-                                        // SỬA LỖI: onClicked được đặt đúng bên trong Button
                                         onClicked: {
-                                            // Gọi hàm trong Python controller
-                                            appController.generate_cities(nodeCount.value, seedInput.value)
+                                            const seed = seedCheck.checked ? seedInput.value : undefined;
+                                            const nodesList = routeBridge.randomize(nodeCount.value, seed);
+                                            routeMap.setNodes(nodesList);
                                         }
                                     }
                                 }
@@ -140,14 +171,17 @@ ApplicationWindow {
                                 spacing: 30
 
                                 Label {
-                                    text: "Điều chỉnh các tham số của thuật toán."
+                                    text: "Generate the topology however you like by adjusting these parameters.\nThe app will keep a highscore for every different topology created."
                                     wrapMode: Text.WordWrap
-                                    color: "#555555ff"
+                                    color: "#555555"
                                 }
 
                                 ColumnLayout {
                                     spacing: 0
-                                    Label { text: "Algorithm" }
+                                    Label {
+                                        text: "Algorithm"
+                                    }
+
                                     MaterialComboxBox {
                                         id: algoBox
                                         model: ["Genetic", "PSO"]
@@ -155,7 +189,6 @@ ApplicationWindow {
                                 }
 
                                 // Chế độ nhập tham số GA
-                                // SỬA LỖI: Bỏ Repeater, dùng ID trực tiếp cho an toàn
                                 Item {
                                     visible: algoBox.currentText === "Genetic"
                                     Layout.fillWidth: true
@@ -165,59 +198,48 @@ ApplicationWindow {
                                         id: genFlow
                                         width: varMenu.width
                                         spacing: 30
-
-                                        ColumnLayout {
-                                            width: 140; spacing: 0
-                                            Label { text: "Population size" }
-                                            MaterialSpinBox { id: popSizeInput; from: 10; to: 9999; value: 100 }
-                                        }
-                                        ColumnLayout {
-                                            width: 140; spacing: 0
-                                            Label { text: "Generations" }
-                                            MaterialSpinBox { id: generationsInput; from: 10; to: 9999; value: 500 }
-                                        }
-                                        ColumnLayout {
-                                            width: 140; spacing: 0
-                                            Label { text: "Crossover rate (%)" } // Thêm (%) vào nhãn
-                                            MaterialSpinBox { id: crossoverInput; from: 0; to: 100; value: 90 } // Dùng giá trị nguyên: 0-100
-                                        }
-                                        ColumnLayout {
-                                            width: 140; spacing: 0
-                                            Label { text: "Mutation rate (%)" } // Thêm (%) vào nhãn
-                                            MaterialSpinBox { id: mutationInput; from: 0; to: 100; value: 1 } // Dùng giá trị nguyên: 0-100
+                                        Repeater {
+                                            model: ["Population size", "Generations", "Crossover rate", "Mutation rate"]
+                                            delegate: ColumnLayout {
+                                                width: 140
+                                                spacing: 0
+                                                Label {
+                                                    text: modelData
+                                                }
+                                                MaterialSpinBox {
+                                                    from: 0
+                                                    to: 9999
+                                                    value: 3
+                                                }
+                                            }
                                         }
                                     }
                                 }
 
-                                // Chế độ nhập các tham số PSO (chưa sử dụng)
+                                // Chế độ nhập các tham số PSO
                                 Item {
                                     visible: algoBox.currentText === "PSO"
                                     Layout.fillWidth: true
-                                    // ...
-                                }
+                                    implicitHeight: psoFlow.implicitHeight
 
-                                // Nút để chạy thuật toán
-                                Button {
-                                    id: runButton
-                                    text: "Run Algorithm"
-                                    Layout.topMargin: 20
-                                    Layout.alignment: Qt.AlignHCenter
-                                    implicitWidth: 200
-                                    implicitHeight: 45
-                                    background: Rectangle { color: "#4CAF50"; radius: 8 }
-
-                                    onClicked: {
-                                        if (algoBox.currentText === "Genetic") {
-                                            var gaParams = {
-                                                "populationSize": popSizeInput.value,
-                                                "generations": generationsInput.value,
-                                                // Chia cho 100.0 để chuyển thành số thập phân
-                                                "crossoverRate": crossoverInput.value / 100.0, // Gửi đi 0.9
-                                                "mutationRate": mutationInput.value / 100.0   // Gửi đi 0.01
+                                    Flow {
+                                        id: psoFlow
+                                        width: varMenu.width
+                                        spacing: 30
+                                        Repeater {
+                                            model: ["Swarm size", "Initial Velocity", "Inertia Weight", "Cognitive Coefficient", "Social Coefficient", "Velocity Clamping", "Number of Iterations"]
+                                            delegate: ColumnLayout {
+                                                width: 140
+                                                spacing: 0
+                                                Label {
+                                                    text: modelData
+                                                }
+                                                MaterialSpinBox {
+                                                    from: 0
+                                                    to: 9999
+                                                    value: 3
+                                                }
                                             }
-                                            appController.run_ga(gaParams)
-                                        } else {
-                                            console.log("PSO not implemented yet.")
                                         }
                                     }
                                 }
@@ -231,7 +253,7 @@ ApplicationWindow {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.preferredWidth: 0.6
+                Layout.preferredWidth: 0.5
 
                 Rectangle {
                     Layout.fillWidth: true
@@ -240,61 +262,93 @@ ApplicationWindow {
 
                     TabBar {
                         id: chartsBar
-                        // ...
-                        TabButton { text: "Route and fitness" }
-                        TabButton { text: "History" }
-                        TabButton { text: "Benchmark" }
+                        width: implicitWidth
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        padding: 0
+                        anchors.margins: 0
+                        Material.accent: Theme.onFocus
+
+                        TabButton {
+                            text: "Route and fitness"
+                            width: 150
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                        }
+                        TabButton {
+                            text: "History"
+                            width: 100
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                        }
+                        TabButton {
+                            text: "Benchmark"
+                            width: 100
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                        }
                     }
                 }
 
                 StackLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+
                     currentIndex: chartsBar.currentIndex
 
-                    Item {
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
                         RouteMap {
-                            id: routeChart
-                            title: "Route"
-                            anchors.left: parent.left
-                            width: parent.width / 2
-                            height: parent.height
-                            anchors.verticalCenter: parent.verticalCenter
+                            id: routeMap
+                            implicitWidth: 400
+                            implicitHeight: 400
+                        }
+                        Item {
+                            Layout.fillWidth: true
                         }
 
                         Chart {
                             id: fitnessChart
                             title: "Fitness"
-                            anchors.right: parent.right
-                            width: parent.width / 2
-                            height: parent.height
-                            anchors.verticalCenter: parent.verticalCenter
+                            implicitWidth: 400
+                            implicitHeight: 400
+                        }
+
+                        Item {
+                            Layout.fillWidth: true
                         }
                     }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 160
+                    color: "red"
                 }
             }
         }
     }
 
-    // --- Kết nối QML với Python Controller ---
+    // --- Kết nối QML với Python ---
     Connections {
-        target: appController // Đổi tên thành appController
+        target: fitnessBridge
 
-        function onUpdateFitnessChart(pt) {
+        function onPointAdded(pt) {
             fitnessChart.addPoint(pt.x, pt.y);
         }
+    }
 
-        function onDrawNodesOnMap(nodes) {
-            routeChart.drawNodes(nodes);
-        }
+    Connections {
+        target: routeBridge
 
-        function onDrawRouteOnMap(route) {
-            routeChart.drawRoute(route);
-        }
-
-        function onClearCharts() {
-            fitnessChart.clear();
-            routeChart.clear();
+        function onRandomized(nodesList) {
+            routeMap.setNodes(nodesList);
         }
     }
 }
