@@ -2,3 +2,5 @@ simpleai
 PySide6
 matplotlib
 numpy
+
+// Sắp thay thế bằng uv
