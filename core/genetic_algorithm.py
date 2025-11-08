@@ -152,23 +152,59 @@ class GeneticAlgorithmTSP:
 # DEMO CHẠY THỬ
 # =========================================
 if __name__ == "__main__":
-    print("=== DEMO Genetic Algorithm cho Travelling Salesman Problem (TSP) ===\n")
+    import matplotlib.pyplot as plt
 
-    # Tạo 10 thành phố ngẫu nhiên (tọa độ x, y)
+    # --- Tạo dữ liệu mẫu ---
     random.seed(42)
-    cities = [(random.uniform(0, 100), random.uniform(0, 100)) for _ in range(10)]
+    num_cities = 20
+    cities = [(random.uniform(0, 100), random.uniform(0, 100)) for _ in range(num_cities)]
 
+    # --- Khởi tạo và chạy GA ---
     ga = GeneticAlgorithmTSP(
         cities=cities,
         population_size=100,
         crossover_rate=0.9,
         mutation_rate=0.02,
-        elitism=True
+        elitism=True,
     )
 
     ga.initialize_population()
-    best = ga.run(generations=150)
 
-    print("\nBest route found:")
-    print(best.route)
-    print("Total distance:", best.distance)
+    generations = 200
+    best_distances = []
+
+    for g in range(generations):
+        ga.evolve()
+        best = ga.best_individual()
+        best_distances.append(best.distance)
+        if (g + 1) % 10 == 0:
+            print(f"Generation {g+1}: Best Distance = {best.distance:.2f}")
+
+    # --- In kết quả cuối ---
+    best = ga.best_individual()
+    print("\nBest route found:", best.route)
+    print("Shortest distance:", best.distance)
+
+    # --- Vẽ đồ thị quãng đường ---
+    plt.figure(figsize=(8, 5))
+    plt.plot(best_distances, '-o', linewidth=2, markersize=4)
+    plt.title("Quá trình tối ưu quãng đường TSP bằng Genetic Algorithm")
+    plt.xlabel("Thế hệ (Generation)")
+    plt.ylabel("Quãng đường tốt nhất (Best Distance)")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.tight_layout()
+    plt.show()
+
+    # --- Vẽ sơ đồ các thành phố & tuyến đường tốt nhất ---
+    x = [cities[i][0] for i in best.route] + [cities[best.route[0]][0]]
+    y = [cities[i][1] for i in best.route] + [cities[best.route[0]][1]]
+
+    plt.figure(figsize=(6, 6))
+    plt.scatter([c[0] for c in cities], [c[1] for c in cities], c='blue')
+    plt.plot(x, y, '-r', linewidth=2)
+    plt.title(f"Tuyến đường ngắn nhất (distance = {best.distance:.2f})")
+    for idx, (cx, cy) in enumerate(cities):
+        plt.text(cx + 1, cy + 1, str(idx), fontsize=8)
+    plt.tight_layout()
+    plt.show()
+
