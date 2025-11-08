@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal, Slot, QPointF
 import numpy as np
 
-from core.pso_continuous import solve_tsp_pso, PSO
+from core.pso_continuous import solve_tsp_pso, PSO_TSP
 from core.pso_discrete import solve_tsp_discrete_pso, DiscretePSO
 
 
@@ -51,14 +51,14 @@ class RouteBridge(QObject):
         v_max = velocity_clamping if velocity_clamping > 0 else None
         
         # Create PSO instance
-        pso = PSO(
+        pso = PSO_TSP(
             cities=cities,
-            swarm_size=swarm_size,
-            initial_velocity=initial_velocity,
+            n_particles=swarm_size,
+            init_velocity=initial_velocity,
             inertia_weight=inertia_weight,
             cognitive_coef=cognitive_coef,
             social_coef=social_coef,
-            velocity_clamping=v_max,
+            velocity_clamp=v_max,
             max_iterations=max_iterations
         )
         

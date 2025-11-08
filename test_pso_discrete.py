@@ -170,7 +170,7 @@ def compare_with_continuous_pso():
     print("Comparing Discrete PSO vs Continuous PSO (SPV)")
     print("=" * 60)
     
-    from core.pso_continuous import PSO
+    from core.pso_continuous import PSO_TSP
     
     import random
     random.seed(123)  # For fair comparison
@@ -188,14 +188,14 @@ def compare_with_continuous_pso():
     
     # Run Continuous PSO (SPV)
     print("1. Continuous PSO (SPV):")
-    pso_continuous = PSO(
+    pso_continuous = PSO_TSP(
         cities=cities,
-        swarm_size=swarm_size,
-        initial_velocity=0.5,
+        n_particles=swarm_size,
+        init_velocity=0.5,
         inertia_weight=0.7,
         cognitive_coef=1.5,
         social_coef=1.5,
-        velocity_clamping=1.0,
+        velocity_clamp=1.0,
         max_iterations=max_iterations
     )
     tour_continuous = pso_continuous.optimize()

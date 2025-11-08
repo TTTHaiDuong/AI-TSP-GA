@@ -3,7 +3,7 @@ Test script for Continuous PSO implementation
 Run this to verify Continuous PSO works correctly
 """
 
-from core.pso_continuous import PSO, solve_tsp_pso
+from core.pso_continuous import PSO_TSP, solve_tsp_pso
 
 
 def test_simple_tsp():
@@ -47,7 +47,7 @@ def test_simple_tsp():
     
     # Run PSO
     print("\nRunning PSO...")
-    pso = PSO(cities, **params)
+    pso = PSO_TSP(cities, **params)
     best_tour = pso.optimize()
     best_distance = pso.get_best_distance()
     fitness_history = pso.get_fitness_history()
@@ -105,7 +105,7 @@ def test_larger_tsp():
     }
     
     print("\nRunning PSO...")
-    pso = PSO(cities, **params)
+    pso = PSO_TSP(cities, **params)
     best_tour = pso.optimize()
     best_distance = pso.get_best_distance()
     fitness_history = pso.get_fitness_history()
