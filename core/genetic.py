@@ -1,3 +1,6 @@
+# Sử dụng numpy cho tối ưu thời gian
+# Thay vì sử dụng vòng lặp for thì vector hoá vòng lặp bằng numpy
+# 
 import numpy as np
 
 class GA:
@@ -24,14 +27,10 @@ class GA:
 
     def evaluate(self):
         """Vectorized fitness computation based on cost matrix"""
-        total_cost = np.zeros(self.pop_size)
-        for i in range(self.n_cities):
-            a = self.population[:, i]
-            b = self.population[:, (i + 1) % self.n_cities]
-            total_cost += self.cost_matrix[a, b]
-
-        self.costs = total_cost
-        self.fitness = 1.0 / (total_cost + 1e-9)
+        a = self.population
+        b = np.roll(self.population, -1, axis=1)
+        self.costs = self.cost_matrix[a, b].sum(axis=1)
+        self.fitness = 1.0 / (self.costs + 1e-9)
         return self.fitness
     
     def selection(self):
@@ -48,13 +47,16 @@ class GA:
         child = np.full(n, -1)
         child[start:end] = parent1[start:end]
 
+        used = np.zeros(n, dtype=bool)
+        used[parent1[start:end]] = True
+
         pos = end
         for city in parent2:
-            if city not in child:
-                if pos >= n:
-                    pos = 0
+            if not used[city]:
                 child[pos] = city
-                pos += 1
+                used[city] = True
+                pos = (pos + 1) % n
+
         return child
     
     def crossover_population(self, selected):
@@ -85,14 +87,17 @@ class GA:
         offspring = self.crossover_population(selected)
         self.mutate(offspring)
 
-        # Elitism (nếu có)
+        self.population = offspring
+        fitness = self.evaluate()
+        
+        # Elitism
         if self.elitism:
-            fitness = self.evaluate()
             elite_idx = np.argmax(fitness)
             elite = self.population[elite_idx].copy()
-            offspring[0] = elite
+            worst_idx = np.argmin(fitness)
+            self.population[worst_idx] = elite
+            self.evaluate()
 
-        self.population = offspring
 
     def best(self):
         idx = np.argmax(self.fitness)
@@ -117,7 +122,7 @@ if __name__ == "__main__":
     np.fill_diagonal(cost_matrix, np.inf)
 
     ga = GA(cost_matrix, population_size=100, mutation_rate=0.03)
-    best_route, best_distance = ga.optimize(generations=1000)
+    best_route, best_distance = ga.optimize(generations=500)
 
     print("\nBest route:", best_route)
     print("Best distance:", best_distance)
