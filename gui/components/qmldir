@@ -1,1 +1,4 @@
 singleton Theme 1.0 Theme.qml
+
+singleton RandTopologyProps 1.0 LeftPanel/RandTopologyProps.qml
+singleton VariablesProps 1.0 LeftPanel/VariablesProps.qml

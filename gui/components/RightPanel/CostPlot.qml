@@ -1,15 +1,17 @@
 import QtCharts
 import QtQuick.Controls
 import QtQuick
+import ".."
 
 ChartView {
     id: root
-    antialiasing: true
     legend.visible: false
     margins.top: 1
     margins.bottom: 1
     margins.left: 1
     margins.right: 1
+    antialiasing: true
+    smooth: true
 
     property double padding: 1.0
     property color pointColor: "red"
@@ -133,19 +135,6 @@ ChartView {
     //         event.accepted = true;
     //     }
     // }
-
-    Button {
-        text: "Thêm ngẫu nhiên"
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        onClicked: {
-            let x = lineSeries.count;
-            let y = Math.random() * 50;
-
-            lineSeries.append(x, y);
-            pointSeries.append(x, y);
-        }
-    }
 
     // MouseArea {
     //     anchors.fill: parent

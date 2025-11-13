@@ -5,6 +5,7 @@ from PySide6.QtGui import QIcon
 
 from gui.controllers.fitness_chart import FitnessBridge
 from gui.controllers.route_map import RouteBridge
+from gui.controllers.optimize import OptimizationBridge
 
 import sys
     
@@ -15,8 +16,11 @@ if __name__ == "__main__":
 
     fitnessbridge = FitnessBridge()
     routeBridge = RouteBridge()
+    optimizationBridge = OptimizationBridge()
+    
     engine.rootContext().setContextProperty("chartBridge", fitnessbridge)
     engine.rootContext().setContextProperty("routeBridge", routeBridge)
+    engine.rootContext().setContextProperty("optimizationBridge", optimizationBridge)
 
     app.setWindowIcon(QIcon("gui/assets/app_icon.svg"))
     

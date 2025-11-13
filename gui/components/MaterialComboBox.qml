@@ -36,7 +36,7 @@ ComboBox {
 
     // Nội dung
     contentItem: Text {
-        text: root.displayText
+        text: root.currentValue
         font: root.font
         color: root.activeFocus ? Theme.onFocus : "#222222"
         verticalAlignment: Text.AlignVCenter

@@ -6,10 +6,18 @@ Control {
     id: root
     property int from: 0
     property int to: 9999
-    property int value: 0
+    property double value: 0
+    property double step: 1
+    property bool grayedOut
 
     implicitWidth: 100
     implicitHeight: 30
+
+    Rectangle {
+        anchors.fill: parent
+        color: "white"
+        opacity: root.grayedOut ? 0.6 : 0
+    }
 
     // Đường viền dưới
     background: Rectangle {
@@ -23,7 +31,7 @@ Control {
 
         // Hiệu ứng khi focus
         Rectangle {
-            width: inputField.activeFocus ? parent.width : 0
+            width: inputField.activeFocus && !root.grayedOut ? parent.width : 0
             height: 2
             color: Theme.onFocus
             radius: 1
@@ -47,8 +55,9 @@ Control {
             anchors.left: parent.left
             anchors.right: indicator.left
             anchors.rightMargin: 8
+
             text: root.value
-            color: activeFocus ? Theme.onFocus : "#222222"
+            color: activeFocus && !root.grayedOut ? Theme.onFocus : "#222222"
             font.pixelSize: 14
             horizontalAlignment: TextEdit.AlignLeft
             verticalAlignment: TextEdit.AlignVCenter
@@ -57,14 +66,14 @@ Control {
 
             background: null
 
-            validator: IntValidator {
+            validator: DoubleValidator {
                 bottom: root.from
                 top: root.to
             }
 
             onEditingFinished: {
-                const onlyNums = text.replace(/\D/g, "");
-                root.value = parseInt(onlyNums || "0");
+                const onlyNums = text.replace(/,/g, "");
+                root.value = parseFloat(onlyNums || "0");
             }
         }
 
@@ -113,12 +122,19 @@ Control {
     }
 
     function increase() {
-        if (root.value < root.to)
-            root.value++;
+        if (value < to)
+            value = Math.round((value + step) * 100) / 100;
     }
 
     function decrease() {
-        if (root.value > root.from)
-            root.value--;
+        if (value > from)
+            value = Math.round((value - step) * 100) / 100;
+    }
+
+    onValueChanged: {
+        if (value > to)
+            value = to;
+        if (value < from)
+            value = from;
     }
 }

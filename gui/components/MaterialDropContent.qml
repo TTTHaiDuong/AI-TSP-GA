@@ -6,23 +6,24 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     implicitWidth: parent ? parent.width : 300
-    implicitHeight: header.implicitHeight + (root.expanded ? wrapContent.implicitHeight : 0)
+    implicitHeight: header.implicitHeight + (expanded ? wrapContent.implicitHeight : 0)
     color: "transparent"
     clip: true
 
     property string title: "Menu"
     property bool expanded: true
     property int padding: 30
+    property int spacing: 30
 
     default property alias contentChildren: contentArea.children
 
     // Header
     Button {
         id: header
+        implicitHeight: 40
         anchors.left: parent.left
         anchors.right: parent.right
         font.bold: true
-        implicitHeight: 40
         z: 1
 
         Rectangle {
@@ -87,14 +88,17 @@ Rectangle {
         color: "transparent"
         implicitHeight: contentArea.implicitHeight + root.padding * 2
         anchors.top: header.bottom
-        visible: root.expanded
         anchors.topMargin: root.expanded ? 0 : -implicitHeight
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: root.expanded
 
         // Nội dung chính
         ColumnLayout {
             id: contentArea
             anchors.fill: parent
             anchors.margins: root.padding
+            spacing: root.spacing
         }
 
         Behavior on anchors.topMargin {

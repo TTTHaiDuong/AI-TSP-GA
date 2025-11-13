@@ -24,6 +24,7 @@ class GA:
         )
         self.fitness = np.zeros(self.pop_size)
         self.costs = np.zeros(self.pop_size)
+        self.history = []
 
     def evaluate(self):
         """Vectorized fitness computation based on cost matrix"""
@@ -107,6 +108,7 @@ class GA:
         for gen in range(generations):
             self.evolve()
             _, best_dist = self.best()
+            self.history.append(best_dist)
             avg_fit = np.mean(self.fitness)
             print(f"Gen {gen+1:3d} | Best = {best_dist:.3f} | Avg Fit = {avg_fit:.6f}")
         return self.best()

@@ -4,7 +4,7 @@ Item {
     id: root
     property alias chart: chart
 
-    Chart {
+    CostPlot {
         id: chart
         anchors.fill: parent
         title: "Route"
@@ -17,17 +17,24 @@ Item {
         axisY.max: 1.1
     }
 
-    function getNodes() {
+    function getCities() {
         const pts = [];
         for (let i = 0; i < chart.points.count; i++)
             pts.push(chart.points.at(i));
         return pts;
     }
 
-    function setNodes(nodesList) {
+    function setCities(nodesList) {
         chart.points.clear();
         nodesList.forEach(n => {
             chart.points.append(n.x, n.y);
         });
+    }
+
+    function setRoute(route) {
+        for (let i = 0; i <= route.length; i++) {
+            const point = chart.points.at(route[i % route.length]);
+            chart.lines.append(point);
+        }
     }
 }
