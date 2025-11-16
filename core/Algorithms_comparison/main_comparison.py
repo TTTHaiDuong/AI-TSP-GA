@@ -4,6 +4,15 @@ import math
 import matplotlib.pyplot as plt
 import tracemalloc
 
+# ===========================
+# IMPORT ALGORITHMS
+# ===========================
+from SA.sa_tsp import run_algorithm as run_SA_real
+from ACO.aco_tsp import run_algorithm as run_ACO_real
+from Heldkarp.heldkarp_tsp import run_algorithm as run_HK_real
+# Import GA
+# Import PSO
+
 # ============================================================
 #   HELPER: Random TSP instance (10–20 cities)
 # ============================================================
@@ -28,7 +37,7 @@ def build_distance_matrix(cities):
 #   DUMMY ALGO RESULTS (mock)
 #   -> sẽ thay bằng import từ SA/ACO/HK thật sau
 # ============================================================
-def run_SA(dist_matrix):
+"""def run_SA(dist_matrix):
     time.sleep(0.1)  # giả lập chạy
 
     return {
@@ -65,7 +74,7 @@ def run_HeldKarp(dist_matrix):
         "fitness_calls": random.randint(300, 600),
         "memory_kb": random.uniform(300, 500),
         "history": [2000, 1500, 1100, 900, 650, 500, 450, 420, 410],
-    }
+    } """
 
 
 # ============================================================
@@ -82,7 +91,7 @@ def add_value_labels(ax, unit=""):
             textcoords="offset points",
             ha='center',
             va='bottom',
-            fontsize=9
+            fontsize=7
         )
 
 
@@ -169,14 +178,15 @@ def main():
 
     # Running
     results = []
-    results.append(run_SA(dist))
-    results.append(run_ACO(dist))
-    results.append(run_HeldKarp(dist))
+    results.append(run_SA_real(dist))
+    results.append(run_ACO_real(dist))
+    results.append(run_HK_real(dist))
 
     # Print results
     print("\n===== RESULTS =====")
     for r in results:
         print(f"\n--- {r['name']} ---")
+        print(f"n = {r['n_nodes']} nodes")
         print(f"Best cost      : {r['best_cost']:.2f}")
         print(f"Time (ms)      : {r['time_us']/1000:.2f}")
         print(f"Memory (KB)    : {r['memory_kb']:.2f}")
