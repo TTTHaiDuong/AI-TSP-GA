@@ -5,21 +5,22 @@ import ".."
 
 ChartView {
     id: root
+    margins.top: 5
+    margins.bottom: 15
+    margins.left: 5
+    margins.right: 25
     legend.visible: false
-    margins.top: 1
-    margins.bottom: 1
-    margins.left: 1
-    margins.right: 1
     antialiasing: true
     smooth: true
+    backgroundColor: "#f6f6f6ff"
 
     property double padding: 1.0
     property color pointColor: "red"
     property color lineColor: "red"
     property alias axisX: axisX
     property alias axisY: axisY
-    property alias lines: lineSeries
-    property alias points: pointSeries
+    property alias lineSeries: lineSeries
+    property alias pointSeries: pointSeries
 
     ValueAxis {
         id: axisX

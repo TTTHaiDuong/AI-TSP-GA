@@ -1,4 +1,8 @@
 singleton Theme 1.0 Theme.qml
+singleton Vector 1.0 Vector.qml
+singleton Line 1.0 Line.qml
 
 singleton RandTopologyProps 1.0 LeftPanel/RandTopologyProps.qml
 singleton VariablesProps 1.0 LeftPanel/VariablesProps.qml
+
+singleton AToggleButtonType 1.0 RightPanel/AToggleButtonType.qml

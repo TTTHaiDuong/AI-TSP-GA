@@ -14,13 +14,13 @@ def distance_matrix_np(points):
 class OptimizationBridge(QObject):
     randomized = Signal(list)
 
-    @Slot(list, int, int, float, float, result=tuple)
+    @Slot(list, int, int, float, float, result=list)
     def genetic(self, points, pop_size, generations, crossover_rate, mutation_rate):
-        city_list = [(float(c["x"]), float(c["y"])) for c in points]
+        city_list = [(float(c.x()), float(c.y())) for c in points]
         cost_matrix = distance_matrix_np(city_list)
         ga = GA(cost_matrix, pop_size, crossover_rate, mutation_rate)
         individual, _ = ga.optimize(generations)
-        return individual.tolist(), ga.history
+        return [individual.tolist(), ga.history]
     
     @Slot(list, result=list)
     def solve_tsp(self, pts, **algo_params):

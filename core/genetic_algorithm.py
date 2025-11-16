@@ -66,6 +66,12 @@ def swap_mutation(individual: Individual, mutation_rate: float):
             j = random.randint(0, len(individual.route) - 1)
             individual.route[i], individual.route[j] = individual.route[j], individual.route[i]
 
+"""
+
+
+"""
+
+
 
 # =========================================
 # LỚP THUẬT TOÁN DI TRUYỀN CHO TSP

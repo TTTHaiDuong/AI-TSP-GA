@@ -16,7 +16,6 @@ ApplicationWindow {
     minimumHeight: 400
 
     property bool narrow: width <= 900
-    property bool medium: !narrow && width < 1200
     property bool drawerState
 
     Item {
@@ -54,25 +53,32 @@ ApplicationWindow {
             }
 
             // Container hai control panel trái và phải
-            RowLayout {
+            SplitView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 0
+
+                // handle: Rectangle {
+                //     // custom handle
+                //     width: 6             // chiều ngang handle
+                //     color: "#ff0000"     // đổi màu đỏ
+                //     radius: 3            // bo tròn góc
+                //     anchors.top: parent.top
+                //     anchors.bottom: parent.bottom
+                // }
 
                 // Control panel bên trái: điều chỉnh các tham số
-                LeftPanel {
+                NewLeftPanel {
+                    openCostMatrix: true
                     visible: !root.narrow
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: 0.3
+                    SplitView.preferredWidth: 400
+                    SplitView.minimumWidth: 300
                 }
 
                 // Control Panel bên phải: biểu đồ Route + Fitness
                 RightPanel {
                     narrow: root.narrow
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: 0.7
+                    SplitView.fillWidth: true
+                    SplitView.minimumWidth: 500
 
                     onInputClicked: drawer.open()
                 }

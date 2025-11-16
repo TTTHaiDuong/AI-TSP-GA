@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 // import QtQuick.Effects
+
 Rectangle {
     id: root
     implicitWidth: parent ? parent.width : 300
@@ -23,7 +24,6 @@ Rectangle {
         implicitHeight: 40
         anchors.left: parent.left
         anchors.right: parent.right
-        font.bold: true
         z: 1
 
         Rectangle {
@@ -32,7 +32,7 @@ Rectangle {
             border.color: "#ececec"
             border.width: 1
 
-            // Tựa đề của Menu
+            // Tựa đề
             Label {
                 text: root.title
                 font.bold: true
@@ -43,16 +43,17 @@ Rectangle {
 
             // Nút mũi tên
             Image {
-                anchors.right: parent.right
-                anchors.rightMargin: 15
-                anchors.verticalCenter: parent.verticalCenter
                 source: "../assets/drop_arrow.png"
                 rotation: root.expanded ? 90 : 0
-                width: 15
-                height: 15
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 layer.enabled: true
+
+                anchors.right: parent.right
+                anchors.rightMargin: 15
+                anchors.verticalCenter: parent.verticalCenter
+                width: 15
+                height: 15
 
                 Behavior on rotation {
                     NumberAnimation {

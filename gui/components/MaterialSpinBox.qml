@@ -9,10 +9,12 @@ Control {
     property double value: 0
     property double step: 1
     property bool grayedOut
+    property int style: 0
 
     implicitWidth: 100
     implicitHeight: 30
 
+    // Hiệu ứng grayed out
     Rectangle {
         anchors.fill: parent
         color: "white"
@@ -20,27 +22,55 @@ Control {
     }
 
     // Đường viền dưới
-    background: Rectangle {
-        height: 1
-        color: Theme.unFocus
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
+    background: Item {
+        anchors.fill: parent
+
+        Rectangle {
+            visible: root.style === 0
+            height: 1
+            color: Theme.unFocus
+            anchors {
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+                rightMargin: indicator.anchors.rightMargin
+            }
+
+            // Hiệu ứng khi focus
+            Rectangle {
+                width: inputField.activeFocus && !root.grayedOut ? parent.width : 0
+                height: 2
+                color: Theme.onFocus
+                radius: 1
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 100
+                    }
+                }
+            }
         }
 
-        // Hiệu ứng khi focus
         Rectangle {
-            width: inputField.activeFocus && !root.grayedOut ? parent.width : 0
-            height: 2
-            color: Theme.onFocus
-            radius: 1
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.style === 1
+            anchors.fill: parent
+            border.width: 1
+            border.color: Theme.unFocus
+            radius: 4
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: 100
+            Rectangle {
+                visible: inputField.activeFocus && !root.grayedOut
+                anchors.fill: parent
+                border.width: 2
+                border.color: Theme.onFocus
+                radius: parent.radius
+
+                Behavior on visible {
+                    NumberAnimation {
+                        duration: 100
+                    }
                 }
             }
         }
@@ -50,16 +80,21 @@ Control {
         anchors.fill: parent
         color: "transparent"
 
+        // Hiển thị giá trị chính
         TextField {
             id: inputField
-            anchors.left: parent.left
-            anchors.right: indicator.left
-            anchors.rightMargin: 8
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                left: parent.left
+                right: indicator.left
+                rightMargin: 4
+            }
 
             text: root.value
             color: activeFocus && !root.grayedOut ? Theme.onFocus : "#222222"
             font.pixelSize: 14
-            horizontalAlignment: TextEdit.AlignLeft
+            horizontalAlignment: root.style === 0 ? TextEdit.AlignLeft : TextEdit.AlignHCenter
             verticalAlignment: TextEdit.AlignVCenter
             inputMethodHints: Qt.ImhDigitsOnly
             leftPadding: 0
@@ -82,6 +117,7 @@ Control {
             id: indicator
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
+            anchors.rightMargin: 10
             spacing: 0
 
             Text {
@@ -112,6 +148,7 @@ Control {
         }
     }
 
+    // Lăn chuột để tăng giảm giá trị
     WheelHandler {
         onWheel: wheel => {
             if (wheel.angleDelta.y > 0)

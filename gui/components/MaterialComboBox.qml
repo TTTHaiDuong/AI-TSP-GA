@@ -39,19 +39,19 @@ ComboBox {
         text: root.currentValue
         font: root.font
         color: root.activeFocus ? Theme.onFocus : "#222222"
-        verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
         leftPadding: 0
+        verticalAlignment: Text.AlignVCenter
         anchors.left: parent.left
     }
 
     indicator: Text {
         text: "▼"
+        color: root.activeFocus ? Theme.onFocus : Theme.unFocus
         font.pixelSize: 8
         width: 8
         height: 8
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        color: root.activeFocus ? Theme.onFocus : Theme.unFocus
     }
 }

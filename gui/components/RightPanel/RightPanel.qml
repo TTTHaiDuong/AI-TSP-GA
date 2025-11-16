@@ -9,6 +9,7 @@ Rectangle {
     property bool narrow
     property bool medium: width < 900
     property int previousTab
+
     signal inputClicked
 
     border.width: 1
@@ -21,6 +22,12 @@ Rectangle {
             tabBar.currentIndex = 0;
     }
 
+    AsymmetricRulesPanel {
+        visible: false
+    }
+
+    CostMatrixPanel {}
+
     ColumnLayout {
         anchors.fill: parent
 
@@ -29,31 +36,24 @@ Rectangle {
             Layout.fillWidth: true
             implicitHeight: 40
 
-            Rectangle {
-                id: inputButton
-                color: "#eaeaea"
-
-                Label {
-                    text: "Input"
-                    anchors.centerIn: parent
-                    visible: root.narrow
-                }
+            // Nút "Input" để mở bản điều khiển bên trái khi màn hình hẹp
+            MaterialButton {
+                id: inputBtn
                 width: root.narrow ? 100 : 0
+                bgColor: "#eaeaea"
+                pressScale: false
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
                     left: parent.left
                 }
-                clip: true
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        root.inputClicked();
-                    }
-                    hoverEnabled: true
-                    onEntered: parent.color = "#aeaeae"  // màu khi hover
-                    onExited: parent.color = "#eaeaea"
+                onClicked: root.inputClicked()
+
+                Label {
+                    text: "Input"
+                    anchors.centerIn: parent
+                    visible: root.narrow
                 }
 
                 Behavior on width {
@@ -63,16 +63,16 @@ Rectangle {
                 }
             }
 
+            // Thanh các menu tab
             TabBar {
                 id: tabBar
 
                 anchors {
-                    left: inputButton.right
+                    left: inputBtn.right
                     right: parent.right
                     top: parent.top
                     bottom: parent.bottom
                 }
-                padding: 0
                 Material.accent: Theme.onFocus
 
                 TabButton {
@@ -90,7 +90,7 @@ Rectangle {
                     onClicked: root.previousTab = 1
                 }
                 Repeater {
-                    model: ["Benchmark", "Comparison", "History"]
+                    model: ["Comparison", "History"]
                     delegate: TabButton {
                         text: modelData
                         width: 100
@@ -107,33 +107,70 @@ Rectangle {
 
             currentIndex: tabBar.currentIndex
 
-            Item {
+            // Bản đồ và biểu đồ chi phí
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 40
+
+                    Text {
+                        text: "Genetic's Optimization"
+                        anchors.centerIn: parent
+                    }
+                }
+
                 RowLayout {
-                    anchors.fill: parent
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
                     Item {
                         Layout.fillWidth: true
                     }
 
-                    RouteMap {
-                        id: routeMap
-                        Layout.preferredWidth: 500
-                        Layout.preferredHeight: 500
-                        Layout.alignment: Qt.AlignVCenter
+                    Item {
+                        Layout.preferredWidth: 480
+                        Layout.preferredHeight: 480
+
+                        RouteMap {
+                            id: routeMap
+                            anchors.fill: parent
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                        // Arrow {
+                        //     id: arrow
+                        //     visible: true
+                        //     anchors.fill: parent
+                        //     lineWidth: 2
+                        //     arrowSize: 10
+                        //     z: 1000
+
+                        //     Component.onCompleted: {
+                        //         const pt1 = chartToCanvas(Qt.point(0.28, 0.87));
+                        //         const pt2 = chartToCanvas(Qt.point(0.96, 0.38));
+                        //         arrow.startPoint = pt1;
+                        //         arrow.endPoint = pt2;
+                        //     }
+
+                        //     function chartToCanvas(point) {
+                        //         const pos = routeMap.chart.mapToPosition(point, routeMap.chart.lineSeries);
+                        //         // map từ chartView sang Canvas local coordinates
+                        //         return Qt.point(pos.x - routeMap.chart.x, pos.y - routeMap.chart.y);
+                        //     }
+                        // }
                     }
 
                     Item {
                         Layout.fillWidth: true
                     }
 
-                    CostPlot {
+                    BaseChart {
+                        id: costChart
                         title: "Cost"
-                        Layout.preferredWidth: !root.medium ? 500 : 0
-                        Layout.preferredHeight: !root.medium ? 500 : 0
+                        Layout.preferredWidth: !root.medium ? 480 : 0
+                        Layout.preferredHeight: !root.medium ? 480 : 0
                         Layout.alignment: Qt.AlignVCenter
                     }
 
@@ -143,23 +180,27 @@ Rectangle {
                 }
             }
 
+            // Biểu đồ chi phí
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                CostPlot {
-                    id: costPlot
+
+                BaseChart {
                     title: "Cost"
-                    width: Math.max(500, parent.width - 80)
-                    height: 500
+                    width: Math.max(480, parent.width - 80)
+                    height: 480
                     anchors.centerIn: parent
                 }
             }
 
+            // So sánh với các thuật toán + benchmark
             Item {}
 
+            // Lịch sử giải bài toán
             Item {}
         }
 
+        // Nút solve + thanh slider
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 160
@@ -182,10 +223,10 @@ Rectangle {
                         radius: 8
                         bgColor: "#6e6e6e"
                         Label {
-                            anchors.centerIn: parent
-                            text: "Optimize"
+                            text: "Solve"
                             color: "white"
                             font.bold: true
+                            anchors.centerIn: parent
                         }
 
                         onClicked: {
@@ -195,6 +236,11 @@ Rectangle {
                             if (VariablesProps.algoIndex === 0) {
                                 const result = optimizationBridge.genetic(cities, VariablesProps.gaPopSize, VariablesProps.gaGenerations, VariablesProps.gaCrossover, VariablesProps.gaMutation);
                                 routeMap.setRoute(result[0]);
+                                costChart.lines.clear();
+                                result[1].forEach(y => {
+                                    const x = costChart.lines.count;
+                                    costChart.lines.append(x, y);
+                                });
                             }
                         }
                     }
@@ -209,13 +255,14 @@ Rectangle {
 
                         Rectangle {
                             implicitWidth: 100
-                            implicitHeight: 0
                             color: "#ffffffff"
                             radius: 8
                             anchors.bottom: parent.top
+                            anchors.bottomMargin: 5
                             Label {
-                                text: "Epoch " + Math.round(slider.value) + "/" + slider.to
-                                anchors.centerIn: parent
+                                text: "Epoch " + Math.round(slider.value) + "/" + slider.to + " (Early Stopping)"
+                                anchors.left: parent.left
+                                anchors.leftMargin: 5
                             }
                         }
 
@@ -252,10 +299,13 @@ Rectangle {
     }
 
     Connections {
+        target: routeBridge
+    }
+
+    Connections {
         target: RandTopologyProps
 
-        function onGenerateClick(params) {
-            console.log("AÂ");
+        function onGenerateBtnClicked(params) {
             const result = routeBridge.randomize(RandTopologyProps.citiesNum, RandTopologyProps.seed);
             routeMap.setCities(result);
         }

@@ -40,7 +40,7 @@ Button {
 
     onPressedChanged: {
         if (pressed && pressScale)
-            root.scale = 0.95;
+            root.scale = 0.90;
         else
             root.scale = 1.0;
     }

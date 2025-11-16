@@ -4,7 +4,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import ".."
 
-MaterialDropContent {
+DropPanel {
     id: root
     title: "Variables"
     expanded: VariablesProps.expanded
@@ -41,7 +41,6 @@ MaterialDropContent {
 
         // Chế độ nhập tham số GA
         Flow {
-            id: gaFlow
             visible: algoSelect.currentText === "Genetic"
             Layout.fillWidth: true
             spacing: 30
@@ -90,16 +89,17 @@ MaterialDropContent {
                 delegate: ColumnLayout {
                     width: 140
                     spacing: 0
+
                     Label {
                         text: model.name
                     }
                     MaterialSpinBox {
-                        value: model.value
-                        onValueChanged: VariablesProps[model.prop] = value
                         from: model.from
                         to: model.to
                         step: model.step
                         grayedOut: value === 0
+                        value: model.value
+                        onValueChanged: VariablesProps[model.prop] = value
                     }
                 }
             }
@@ -107,7 +107,6 @@ MaterialDropContent {
 
         // Chế độ nhập các tham số PSO
         Flow {
-            id: psoFlow
             visible: algoSelect.currentText === "PSO"
             Layout.fillWidth: true
             spacing: 30
@@ -180,16 +179,17 @@ MaterialDropContent {
                 delegate: ColumnLayout {
                     width: 130
                     spacing: 0
+
                     Label {
                         text: model.name
                     }
                     MaterialSpinBox {
-                        value: model.value
-                        onValueChanged: VariablesProps[model.prop] = value
                         from: model.from
                         to: model.to
                         step: model.step
                         grayedOut: value === 0
+                        value: model.value
+                        onValueChanged: VariablesProps[model.prop] = value
                     }
                 }
             }
@@ -213,46 +213,21 @@ MaterialDropContent {
                 }
             }
 
-            function onExpandedUpdate(v) {
-                root.expanded = v;
-            }
-            function onAlgoIndexUpdate(v) {
-                algoSelect.displayText = v;
-            }
-            function onGaPopSizeUpdate(v) {
-                onAnyUpdate("gaPopSize", v);
-            }
-            function onGaGenerationsUpdate(v) {
-                onAnyUpdate("gaGenerations", v);
-            }
-            function onGaCrossoverUpdate(v) {
-                onAnyUpdate("gaCrossover", v);
-            }
-            function onGaMutationUpdate(v) {
-                onAnyUpdate("gaMutation", v);
-            }
+            onExpandedChanged: root.expanded = VariablesProps.expanded
+            onAlgoIndexChanged: algoSelect.currentIndex = VariablesProps.algoIndex
 
-            function onPsoSwarmSizeUpdate(v) {
-                onAnyUpdate("psoSwarmSize", v);
-            }
-            function onPsoIterationsUpdate(v) {
-                onAnyUpdate("psoIterations", v);
-            }
-            function onPsoInitVelocityUpdate(v) {
-                onAnyUpdate("psoInitVelocity", v);
-            }
-            function onPsoInertiaWeightUpdate(v) {
-                onAnyUpdate("psoInertiaWeight", v);
-            }
-            function onPsoCognitiveCoefUpdate(v) {
-                onAnyUpdate("psoCognitiveCoef", v);
-            }
-            function onPsoSocialCoefUpdate(v) {
-                onAnyUpdate("psoSocialCoef", v);
-            }
-            function onPsoVelocityClampingUpdate(v) {
-                onAnyUpdate("psoVelocityClamping", v);
-            }
+            onGaPopSizeChanged: onAnyUpdate("gaPopSize", VariablesProps.gaPopSize)
+            onGaGenerationsChanged: onAnyUpdate("gaGenerations", VariablesProps.gaGenerations)
+            onGaCrossoverChanged: onAnyUpdate("gaCrossover", VariablesProps.gaCrossover)
+            onGaMutationChanged: onAnyUpdate("gaMutation", VariablesProps.gaMutation)
+
+            onPsoSwarmSizeChanged: onAnyUpdate("psoSwarmSize", VariablesProps.psoSwarmSize)
+            onPsoIterationsChanged: onAnyUpdate("psoIterations", VariablesProps.psoIterations)
+            onPsoInitVelocityChanged: onAnyUpdate("psoInitVelocity", VariablesProps.psoInitVelocity)
+            onPsoInertiaWeightChanged: onAnyUpdate("psoInertiaWeight", VariablesProps.psoInertiaWeight)
+            onPsoCognitiveCoefChanged: onAnyUpdate("psoCognitiveCoef", VariablesProps.psoCognitiveCoef)
+            onPsoSocialCoefChanged: onAnyUpdate("psoSocialCoef", VariablesProps.psoSocialCoef)
+            onPsoVelocityClampingChanged: onAnyUpdate("psoVelocityClamping", VariablesProps.psoVelocityClamping)
         }
     }
 }

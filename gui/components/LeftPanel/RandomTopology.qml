@@ -4,13 +4,13 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import ".."
 
-MaterialDropContent {
+DropPanel {
     id: root
     title: "Random Topology"
     expanded: RandTopologyProps.expanded
     onExpandedChanged: RandTopologyProps.expanded = expanded
 
-    signal generateTopology(int cities, int seed)
+    signal generateTopology(int citiesNum, int seed)
 
     ColumnLayout {
         spacing: 30
@@ -29,7 +29,7 @@ MaterialDropContent {
             Layout.fillWidth: true
             spacing: 30
 
-            // --- Nodes SpinBox ---
+            // Nhập số lượng thành phố
             ColumnLayout {
                 width: 100
                 spacing: 0
@@ -38,7 +38,7 @@ MaterialDropContent {
                     text: "Cities"
                 }
                 MaterialSpinBox {
-                    id: nodeCount
+                    id: citiesNumInput
                     from: 5
                     to: 200
                     value: RandTopologyProps.citiesNum
@@ -46,7 +46,7 @@ MaterialDropContent {
                 }
             }
 
-            // --- Seed SpinBox ---
+            // Nhập random seed
             ColumnLayout {
                 width: 100
                 spacing: 0
@@ -56,12 +56,12 @@ MaterialDropContent {
                     z: 1
 
                     CheckBox {
-                        id: seedCheck
-                        z: 10
+                        id: seedCheckBox
                         text: "Seed"
                         Material.accent: Theme.onFocus
                         padding: 0
                         verticalPadding: 0
+                        z: 10
                         checked: RandTopologyProps.useSeed
                         onCheckedChanged: RandTopologyProps.useSeed = checked
                     }
@@ -70,13 +70,14 @@ MaterialDropContent {
                     id: seedInput
                     from: 0
                     to: 9999
-                    enabled: seedCheck.checked
+                    enabled: seedCheckBox.checked
+                    grayedOut: !enabled
                     value: RandTopologyProps.seed
                     onValueChanged: RandTopologyProps.seed = value
-                    grayedOut: !enabled
                 }
             }
 
+            // Nút khởi tạo
             ColumnLayout {
                 width: 100
                 spacing: 0
@@ -85,34 +86,22 @@ MaterialDropContent {
                     implicitHeight: 16
                 }
                 MaterialButton {
-                    id: generate
+                    text: "Generate"
                     implicitWidth: 100
                     implicitHeight: 30
-                    text: "Generate"
                     radius: 8
 
-                    onClicked: {
-                        RandTopologyProps.generateClicked = !RandTopologyProps.generateClicked;
-                    }
+                    onClicked: RandTopologyProps.generateBtnClicked()
                 }
             }
         }
 
         Connections {
             target: RandTopologyProps
-
-            function onExpandedUpdate(v) {
-                root.expanded = v;
-            }
-            function onCitiesNumUpdate(v) {
-                nodeCount.value = v;
-            }
-            function onUseSeedUpdate(v) {
-                seedCheck.checked = v;
-            }
-            function onSeedUpdate(v) {
-                seedInput.value = v;
-            }
+            onExpandedChanged: root.expanded = RandTopologyProps.expanded
+            onCitiesNumChanged: citiesNumInput.value = RandTopologyProps.citiesNum
+            onUseSeedChanged: seedCheckBox.value = RandTopologyProps.useSeed
+            onSeedChanged: seedInput.value = RandTopologyProps.seed
         }
     }
 }
