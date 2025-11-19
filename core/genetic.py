@@ -1,6 +1,3 @@
-# Sử dụng numpy cho tối ưu thời gian
-# Thay vì sử dụng vòng lặp for thì vector hoá vòng lặp bằng numpy
-# 
 import numpy as np
 
 class GA:
@@ -10,45 +7,74 @@ class GA:
         population_size: int = 100,
         crossover_rate: float = 0.8,
         mutation_rate: float = 0.02,
-        elitism: bool = True
+        elite_size: int = 1,
+        tournament_size: int = 3,
+        seed: int | None = None
     ):
+        if seed is not None:
+            np.random.seed(seed)
+
         self.cost_matrix = cost_matrix.astype(np.float64)
         self.n_cities = cost_matrix.shape[0]
         self.pop_size = population_size
         self.crossover_rate = crossover_rate
         self.mutation_rate = mutation_rate
-        self.elitism = elitism
+        self.elite_size = elite_size
+        self.tournament_size = tournament_size
 
+        # Tạo hoán vị ngẫu nhiên các tuyến đường 
         self.population = np.array(
             [np.random.permutation(self.n_cities) for _ in range(self.pop_size)]
         )
-        self.fitness = np.zeros(self.pop_size)
         self.costs = np.zeros(self.pop_size)
-        self.history = []
+
+        # Sử dụng để đánh giá
+        self.cost_func_call = 0
+
 
     def evaluate(self):
-        """Vectorized fitness computation based on cost matrix"""
-        a = self.population
-        b = np.roll(self.population, -1, axis=1)
-        self.costs = self.cost_matrix[a, b].sum(axis=1)
-        self.fitness = 1.0 / (self.costs + 1e-9)
-        return self.fitness
+        self.cost_func_call += 1
+        pop = self.population
+
+        idx1 = pop[:, :-1]
+        idx2 = pop[:, 1:]
+        last = pop[:, 0]
+
+        self.costs = self.cost_matrix[idx1, idx2].sum(axis=1) \
+               + self.cost_matrix[last, pop[:, 0]] # Chi phí điểm cuối và điểm đầu     
+        
+        return self.costs
     
+
     def selection(self):
-        """Tournament selection vectorized"""
+        """@Deprecated - Thay thế bằng tournament_rank
+        """
+        # Random mảng chỉ số có pop_size phần tử với mỗi giá trị nằm trong [0, pop_size)
         idx1 = np.random.randint(0, self.pop_size, self.pop_size)
         idx2 = np.random.randint(0, self.pop_size, self.pop_size)
-        better = np.where(self.fitness[idx1] > self.fitness[idx2], idx1, idx2)
+        better = np.where(self.costs[idx1] < self.costs[idx2], idx1, idx2)
         return self.population[better]
     
+
+    def tournament_selection(self):
+        # Tạo ma trận random indices (pop_size x k)
+        candidates = np.random.randint(0, self.pop_size, size=(self.pop_size, self.tournament_size))
+        # Lấy index cá thể thắng từng tournament
+        winner_idx = np.argmin(self.costs[candidates], axis=1)
+        winner_idx = candidates[np.arange(self.pop_size), winner_idx]
+        return self.population[winner_idx]
+    
+
     def order_crossover(self, parent1, parent2):
-        """Order Crossover (OX) cho 1 cặp cha mẹ"""
-        n = self.n_cities
-        start, end = sorted(np.random.choice(n, 2, replace=False))
-        child = np.full(n, -1)
+        N = self.n_cities
+        # Lựa chọn 2 phần tử không trùng lặp trong dãy [0, n)
+        # Sắp xếp 2 phần tử này để start < end
+        start, end = sorted(np.random.choice(N, 2, replace=False))
+        child = np.full(N, -1)
         child[start:end] = parent1[start:end]
 
-        used = np.zeros(n, dtype=bool)
+        used = np.zeros(N, dtype=bool)
+        # Đánh dấu đoạn gen của parent1, để tránh lấp vào
         used[parent1[start:end]] = True
 
         pos = end
@@ -56,12 +82,12 @@ class GA:
             if not used[city]:
                 child[pos] = city
                 used[city] = True
-                pos = (pos + 1) % n
+                pos = (pos + 1) % N
 
         return child
     
+
     def crossover_population(self, selected):
-        """Crossover toàn bộ quần thể"""
         new_pop = []
         for i in range(0, self.pop_size, 2):
             p1, p2 = selected[i], selected[(i + 1) % self.pop_size]
@@ -73,45 +99,72 @@ class GA:
             new_pop.extend([c1, c2])
         return np.array(new_pop[:self.pop_size])
     
-    def mutate(self, population):
-        """Swap mutation vectorized"""
-        n = self.n_cities
-        for i in range(self.pop_size):
-            if np.random.rand() < self.mutation_rate:
-                a, b = np.random.choice(n, 2, replace=False)
-                population[i, [a, b]] = population[i, [b, a]]
+
+    # Cải thiện bằng mutate per gene
+    def per_gen_mutate(self, population):
+        N = self.n_cities
+        pop_size = self.pop_size
+
+        # Mask per-gene
+        mask = np.random.rand(pop_size, N) < self.mutation_rate
+
+        # Chỉ lấy các cá thể có >=2 True
+        valid = np.where(mask.sum(axis=1) >= 2)[0]
+        if len(valid) == 0:
+            return
+
+        # Chọn 2 vị trí swap cho mỗi cá thể valid
+        swap_pos = np.array([np.random.choice(np.where(mask[i])[0], 2, replace=False) for i in valid])
+
+        # Thực hiện swap vectorized
+        population[valid, swap_pos[:, 0]], population[valid, swap_pos[:, 1]] = \
+            population[valid, swap_pos[:, 1]], population[valid, swap_pos[:, 0]]
+
 
     def evolve(self):
-        """Một vòng tiến hóa"""
-        # Selection -> Crossover -> Mutation
-        selected = self.selection()
+        if self.elite_size > 0:
+            elite_idx = np.argsort(self.costs)[:self.elite_size]
+            elite = self.population[elite_idx].copy()
+        
+        selected = self.tournament_selection()
         offspring = self.crossover_population(selected)
-        self.mutate(offspring)
+        self.per_gen_mutate(offspring)
+        
+        if self.elite_size > 0:
+            offspring[:self.elite_size] = elite
 
         self.population = offspring
-        fitness = self.evaluate()
-        
-        # Elitism
-        if self.elitism:
-            elite_idx = np.argmax(fitness)
-            elite = self.population[elite_idx].copy()
-            worst_idx = np.argmin(fitness)
-            self.population[worst_idx] = elite
-            self.evaluate()
+        self.evaluate()
 
 
     def best(self):
-        idx = np.argmax(self.fitness)
+        idx = np.argmin(self.costs)
         return self.population[idx], self.costs[idx]
     
-    def optimize(self, generations=100):
+
+    def optimize(self, generations=100, verbose=True):
+        best_cost_hist = []
+        avg_cost_hist = []
+        self.cost_func_call = 0
+
         for gen in range(generations):
             self.evolve()
-            _, best_dist = self.best()
-            self.history.append(best_dist)
-            avg_fit = np.mean(self.fitness)
-            print(f"Gen {gen+1:3d} | Best = {best_dist:.3f} | Avg Fit = {avg_fit:.6f}")
-        return self.best()
+            _, best_cost = self.best()
+            best_cost_hist.append(best_cost)
+            avg_cost = np.mean(self.costs)
+            avg_cost_hist.append(avg_cost)
+            
+            if verbose: 
+                print(f"Gen {gen+1:3d} | Best = {best_cost:.3f} | Avg Cost = {avg_cost:.3f}")
+        
+        best_route, best_cost = self.best()
+        return {
+            "cost_func_call": self.cost_func_call,
+            "avg_cost_hist": avg_cost_hist,
+            "best_cost_hist": best_cost_hist,
+            "best_route": best_route,
+            "best_cost": best_cost
+        }
     
 
 if __name__ == "__main__":

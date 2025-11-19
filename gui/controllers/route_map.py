@@ -7,12 +7,12 @@ class RouteBridge(QObject):
 
     @Slot(int, int, result=list)
     def randomize(self, n_points, seed=None):
-        if seed is not None: np.random.seed(seed)
+        if seed is not None and seed >= 0: np.random.seed(seed)
 
-        coords = np.random.rand(n_points, 2).tolist()
-        coords = np.round(coords, decimals=2)
+        coords = np.random.rand(n_points, 2) * 10
+        coords = np.round(coords, decimals=2) 
 
-        result = [{"x": float(x), "y": float(y)} for x, y in coords]
+        result = [{"order": i + 1, "x": float(x), "y": float(y)} for i, (x, y) in enumerate(coords)]
         return result
     
     @Slot(list, result=list)

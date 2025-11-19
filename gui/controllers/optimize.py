@@ -19,8 +19,9 @@ class OptimizationBridge(QObject):
         city_list = [(float(c.x()), float(c.y())) for c in points]
         cost_matrix = distance_matrix_np(city_list)
         ga = GA(cost_matrix, pop_size, crossover_rate, mutation_rate)
-        individual, _ = ga.optimize(generations)
-        return [individual.tolist(), ga.history]
+        result = ga.optimize(generations)
+
+        return [result["best_route"].tolist(), np.array(result["avg_cost_hist"]).tolist()]
     
     @Slot(list, result=list)
     def solve_tsp(self, pts, **algo_params):

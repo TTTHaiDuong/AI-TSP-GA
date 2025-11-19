@@ -1,8 +1,13 @@
 singleton Theme 1.0 Theme.qml
+singleton Utils 1.0 Utils.qml
 singleton Vector 1.0 Vector.qml
 singleton Line 1.0 Line.qml
 
-singleton RandTopologyProps 1.0 LeftPanel/RandTopologyProps.qml
-singleton VariablesProps 1.0 LeftPanel/VariablesProps.qml
+singleton RandTopologyProps 1.0 Bridge/RandTopologyProps.qml
+singleton VariablesProps 1.0 Bridge/VariablesProps.qml
+singleton CostChartProps 1.0 Bridge/CostChartProps.qml
 
-singleton AToggleButtonType 1.0 RightPanel/AToggleButtonType.qml
+singleton LeftRightPanelBridge 1.0 Bridge/LeftRightPanelBridge.qml
+singleton ComparisonInputProps 1.0 Bridge/ComparisonInputProps.qml
+singleton CitiesInputProps 1.0 Bridge/CitiesInputProps.qml
+singleton AsymmetricRulesInputProps 1.0 Bridge/AsymmetricRulesInputProps.qml

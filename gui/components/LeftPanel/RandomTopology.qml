@@ -10,8 +10,6 @@ DropPanel {
     expanded: RandTopologyProps.expanded
     onExpandedChanged: RandTopologyProps.expanded = expanded
 
-    signal generateTopology(int citiesNum, int seed)
-
     ColumnLayout {
         spacing: 30
 
@@ -91,7 +89,10 @@ DropPanel {
                     implicitHeight: 30
                     radius: 8
 
-                    onClicked: RandTopologyProps.generateBtnClicked()
+                    onClicked: {
+                        const cities = routeBridge.randomize(citiesNumInput.value, seedCheckBox.checked ? seedInput.value : -1);
+                        CitiesInputProps.cities = cities;
+                    }
                 }
             }
         }
@@ -100,8 +101,12 @@ DropPanel {
             target: RandTopologyProps
             onExpandedChanged: root.expanded = RandTopologyProps.expanded
             onCitiesNumChanged: citiesNumInput.value = RandTopologyProps.citiesNum
-            onUseSeedChanged: seedCheckBox.value = RandTopologyProps.useSeed
+            onUseSeedChanged: seedCheckBox.checked = RandTopologyProps.useSeed
             onSeedChanged: seedInput.value = RandTopologyProps.seed
+        }
+
+        Connections {
+            target: routeBridge
         }
     }
 }

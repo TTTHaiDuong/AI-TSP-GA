@@ -14,10 +14,10 @@ Item {
         lineColor: "blue"
         padding: 0
 
-        axisX.min: -0.1
-        axisX.max: 1.1
-        axisY.min: -0.1
-        axisY.max: 1.1
+        axisX.min: -1
+        axisX.max: 11
+        axisY.min: -1
+        axisY.max: 11
     }
 
     function getCities() {

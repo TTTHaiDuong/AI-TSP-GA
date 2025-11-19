@@ -6,10 +6,14 @@ Control {
     id: root
     property int from: 0
     property int to: 9999
-    property double value: 0
-    property double step: 1
+    property real value: 0
+    property real step: 1
     property bool grayedOut
     property int style: 0
+
+    property bool isFocus: inputField.activeFocus && !root.grayedOut ? parent.width : 0
+    onIsFocusChanged: inputField.text = Qt.binding(() => root.value)
+    // Cập nhật lại hiển thị text, vì khi unfocus root.value được đặt nhưng không binding tới text
 
     implicitWidth: 100
     implicitHeight: 30
@@ -38,7 +42,7 @@ Control {
 
             // Hiệu ứng khi focus
             Rectangle {
-                width: inputField.activeFocus && !root.grayedOut ? parent.width : 0
+                width: root.isFocus
                 height: 2
                 color: Theme.onFocus
                 radius: 1
@@ -100,11 +104,6 @@ Control {
             leftPadding: 0
 
             background: null
-
-            validator: DoubleValidator {
-                bottom: root.from
-                top: root.to
-            }
 
             onEditingFinished: {
                 const onlyNums = text.replace(/,/g, "");
@@ -168,10 +167,12 @@ Control {
             value = Math.round((value - step) * 100) / 100;
     }
 
-    onValueChanged: {
+    function clamp() {
         if (value > to)
             value = to;
         if (value < from)
             value = from;
     }
+
+    onValueChanged: clamp()
 }

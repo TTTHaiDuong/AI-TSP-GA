@@ -2,56 +2,38 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import "../CostMatrix"
+import "../Comparison"
+import "../Bridge"
 import ".."
 
-ColumnLayout {
+Item {
     id: root
-    spacing: 0
+    property bool openCostMatrix
 
-    signal inputClicked
+    signal headerClicked
 
-    // Dãy có chữ Input
-    MaterialButton {
-        id: inputHeader
-        Layout.fillWidth: true
-        implicitHeight: 40
-        pressScale: false
-
-        Label {
-            text: "Input"
-            anchors.left: parent.left
-            anchors.leftMargin: 15
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-        onClicked: root.inputClicked()
+    QuickInput {
+        visible: LeftRightPanelBridge.currentTabBarIndex !== 2 && !costMatrixPanel.visible
+        anchors.fill: parent
     }
 
-    // ScrollView danh sách menu drop (Random Topology, Variables)
-    ScrollView {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
+    CostMatrixPanel {
+        id: costMatrixPanel
+        anchors.fill: parent
+        visible: false
+    }
 
-        ScrollBar.vertical: ScrollBar {
-            width: 12
-            policy: dropPanelList.height > height ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-        }
+    ComparisonInput {
+        visible: LeftRightPanelBridge.currentTabBarIndex === 2 && !costMatrixPanel.visible
+        anchors.fill: parent
+    }
 
-        ColumnLayout {
-            id: dropPanelList
-            width: parent.parent.width
-            spacing: 0
+    Connections {
+        target: LeftRightPanelBridge
 
-            RandomTopology {
-                Layout.fillWidth: true
-            }
-
-            Variables {
-                Layout.fillWidth: true
-            }
+        function onCostMatrixOpenRequest() {
+            costMatrixPanel.visible = !costMatrixPanel.visible;
         }
     }
 }

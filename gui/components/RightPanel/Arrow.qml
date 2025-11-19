@@ -2,15 +2,36 @@
 import QtQuick
 import ".."
 
+// Arrow {
+//     id: arrow
+//     visible: true
+//     anchors.fill: parent
+//     lineWidth: 2
+//     arrowSize: 10
+//     z: 1000
+
+//     Component.onCompleted: {
+//         const pt1 = chartToCanvas(Qt.point(0.28, 0.87));
+//         const pt2 = chartToCanvas(Qt.point(0.96, 0.38));
+//         arrow.startPoint = pt1;
+//         arrow.endPoint = pt2;
+//     }
+
+//     function chartToCanvas(point) {
+//         const pos = routeMap.chart.mapToPosition(point, routeMap.chart.lineSeries);
+//         // map từ chartView sang Canvas local coordinates
+//         return Qt.point(pos.x - routeMap.chart.x, pos.y - routeMap.chart.y);
+//     }
+// }
 Canvas {
     id: root
     property point startPoint
     property point endPoint
     property color color: "green"
     property color crossColor: "red"
-    property double lineWidth: 2
-    property double arrowSize: 8
-    property double padding: 5
+    property real lineWidth: 2
+    property real arrowSize: 8
+    property real padding: 5
     layer.enabled: true
 
     // Quản lý hiển thị: [startArrow, midCross, endArrow]

@@ -2,6 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import "../LeftPanel"
+import "../Bridge"
+import "../Comparison"
 import ".."
 
 Rectangle {
@@ -9,6 +12,8 @@ Rectangle {
     property bool narrow
     property bool medium: width < 900
     property int previousTab
+
+    property var costChartValues: [[]]
 
     signal inputClicked
 
@@ -22,11 +27,20 @@ Rectangle {
             tabBar.currentIndex = 0;
     }
 
-    AsymmetricRulesPanel {
-        visible: false
-    }
+    Drawer {
+        id: drawer
+        implicitWidth: parent.width - 70
+        implicitHeight: parent.height
+        modal: true
+        edge: Qt.LeftEdge
+        topPadding: 0
 
-    CostMatrixPanel {}
+        LeftPanel {
+            anchors.fill: parent
+            anchors.topMargin: 40
+            onHeaderClicked: drawer.close()
+        }
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -48,7 +62,7 @@ Rectangle {
                     left: parent.left
                 }
 
-                onClicked: root.inputClicked()
+                onClicked: drawer.open()
 
                 Label {
                     text: "Input"
@@ -66,7 +80,7 @@ Rectangle {
             // Thanh các menu tab
             TabBar {
                 id: tabBar
-
+                onCurrentIndexChanged: LeftRightPanelBridge.currentTabBarIndex = currentIndex
                 anchors {
                     left: inputBtn.right
                     right: parent.right
@@ -104,7 +118,6 @@ Rectangle {
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-
             currentIndex: tabBar.currentIndex
 
             // Bản đồ và biểu đồ chi phí
@@ -134,48 +147,87 @@ Rectangle {
                         Layout.preferredWidth: 480
                         Layout.preferredHeight: 480
 
+                        MaterialButton {
+                            anchors.top: parent.top
+                            anchors.topMargin: -30
+                            anchors.left: parent.left
+                            anchors.leftMargin: 20
+                            implicitWidth: 30
+                            implicitHeight: 30
+                            bgColor: "transparent"
+                            radius: 8
+
+                            Image {
+                                source: "../../assets/edit.svg"
+                                anchors.fill: parent
+                                anchors.margins: 2
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            onClicked: {
+                                if (!root.narrow)
+                                    LeftRightPanelBridge.costMatrixOpenRequest();
+                                else {
+                                    if (!drawer.opened)
+                                        LeftRightPanelBridge.costMatrixOpenRequest();
+                                    drawer.open();
+                                }
+                            }
+                        }
+
                         RouteMap {
                             id: routeMap
                             anchors.fill: parent
                             Layout.alignment: Qt.AlignVCenter
                         }
-                        // Arrow {
-                        //     id: arrow
-                        //     visible: true
-                        //     anchors.fill: parent
-                        //     lineWidth: 2
-                        //     arrowSize: 10
-                        //     z: 1000
-
-                        //     Component.onCompleted: {
-                        //         const pt1 = chartToCanvas(Qt.point(0.28, 0.87));
-                        //         const pt2 = chartToCanvas(Qt.point(0.96, 0.38));
-                        //         arrow.startPoint = pt1;
-                        //         arrow.endPoint = pt2;
-                        //     }
-
-                        //     function chartToCanvas(point) {
-                        //         const pos = routeMap.chart.mapToPosition(point, routeMap.chart.lineSeries);
-                        //         // map từ chartView sang Canvas local coordinates
-                        //         return Qt.point(pos.x - routeMap.chart.x, pos.y - routeMap.chart.y);
-                        //     }
-                        // }
                     }
 
                     Item {
                         Layout.fillWidth: true
                     }
 
-                    BaseChart {
-                        id: costChart
+                    LineChart {
                         title: "Cost"
                         Layout.preferredWidth: !root.medium ? 480 : 0
                         Layout.preferredHeight: !root.medium ? 480 : 0
                         Layout.alignment: Qt.AlignVCenter
+                        legend.visible: false
+
+                        margins.top: 5
+                        margins.bottom: 15
+                        margins.left: 5
+                        margins.right: 25
+
+                        values: root.costChartValues
+
+                        backgroundColor: "#f6f6f6ff"
                     }
 
                     Item {
                         Layout.fillWidth: !root.medium
+                    }
+                }
+
+                RunAlgoPanel {
+                    Layout.fillWidth: true
+
+                    onRun: {
+                        const cities = routeMap.getCities();
+                        if (cities.length === 0)
+                            return;
+                        if (VariablesProps.algoIndex === 0) {
+                            const result = optimizationBridge.genetic(cities, VariablesProps.gaPopSize, VariablesProps.gaGenerations, VariablesProps.gaCrossover, VariablesProps.gaMutation);
+                            routeMap.setRoute(result[0]);
+
+                            const cost = [];
+                            result[1].forEach((y, i) => {
+                                cost.push({
+                                    x: i,
+                                    y
+                                });
+                            });
+                            root.costChartValues = [cost];
+                        }
                     }
                 }
             }
@@ -185,112 +237,33 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                BaseChart {
+                LineChart {
                     title: "Cost"
-                    width: Math.max(480, parent.width - 80)
-                    height: 480
+                    legend.visible: false
+
                     anchors.centerIn: parent
+                    margins.top: 5
+                    margins.bottom: 15
+                    margins.left: 5
+                    margins.right: 25
+
+                    width: Math.max(500, parent.width - 80)
+                    height: 500
+
+                    values: root.costChartValues
+
+                    backgroundColor: "#f6f6f6ff"
                 }
             }
 
             // So sánh với các thuật toán + benchmark
-            Item {}
+            ComparisonTab {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
 
             // Lịch sử giải bài toán
             Item {}
-        }
-
-        // Nút solve + thanh slider
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: 160
-            color: "transparent"
-
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 50
-
-                RowLayout {
-                    Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 30
-
-                    MaterialButton {
-                        id: runBtn
-                        Layout.alignment: Qt.AlignHCenter
-                        implicitWidth: 100
-                        implicitHeight: 40
-                        radius: 8
-                        bgColor: "#6e6e6e"
-                        Label {
-                            text: "Solve"
-                            color: "white"
-                            font.bold: true
-                            anchors.centerIn: parent
-                        }
-
-                        onClicked: {
-                            const cities = routeMap.getCities();
-                            if (cities.length === 0)
-                                return;
-                            if (VariablesProps.algoIndex === 0) {
-                                const result = optimizationBridge.genetic(cities, VariablesProps.gaPopSize, VariablesProps.gaGenerations, VariablesProps.gaCrossover, VariablesProps.gaMutation);
-                                routeMap.setRoute(result[0]);
-                                costChart.lines.clear();
-                                result[1].forEach(y => {
-                                    const x = costChart.lines.count;
-                                    costChart.lines.append(x, y);
-                                });
-                            }
-                        }
-                    }
-
-                    Slider {
-                        id: slider
-                        from: 1
-                        to: 1000
-                        value: 50
-                        Layout.fillWidth: true
-                        Material.accent: Theme.onFocus
-
-                        Rectangle {
-                            implicitWidth: 100
-                            color: "#ffffffff"
-                            radius: 8
-                            anchors.bottom: parent.top
-                            anchors.bottomMargin: 5
-                            Label {
-                                text: "Epoch " + Math.round(slider.value) + "/" + slider.to + " (Early Stopping)"
-                                anchors.left: parent.left
-                                anchors.leftMargin: 5
-                            }
-                        }
-
-                        onValueChanged:
-                        // console.log("Giá trị Slider:", value);
-                        {}
-
-                        // MouseArea {
-                        //     id: hoverArea
-                        //     anchors.fill: parent
-                        //     hoverEnabled: true
-                        //     onPositionChanged: {
-                        //         // Tính toán giá trị tương ứng theo vị trí chuột
-                        //         let rel = Math.max(0, Math.min(1, mouse.x / width));
-                        //         slider.value = slider.from + rel * (slider.to - slider.from);
-                        //     }
-                        // }
-
-                        Tooltip {
-                            id: sliderTooltip
-                            visible: slider.pressed
-                            y: slider.handle.y - height - 6
-                            x: slider.handle.x + slider.handle.width / 2 - width / 2
-                            text: Math.round(slider.value)
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -303,11 +276,8 @@ Rectangle {
     }
 
     Connections {
-        target: RandTopologyProps
+        target: CitiesInputProps
 
-        function onGenerateBtnClicked(params) {
-            const result = routeBridge.randomize(RandTopologyProps.citiesNum, RandTopologyProps.seed);
-            routeMap.setCities(result);
-        }
+        onCitiesChanged: routeMap.setCities(CitiesInputProps.cities)
     }
 }

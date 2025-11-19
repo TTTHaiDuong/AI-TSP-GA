@@ -18,7 +18,10 @@ Item {
             },
             25], [10, 0, 35, 25, 30], [15, 35, 0, 30, 20], [20, 25, 30, 0, 15], [25, 30, 20, 15, 0]]
 
-    onCostMatrixChanged: matrixGrid.update()
+    onCostMatrixChanged: {
+        if (costMatrix && costMatrix.length >= 2)
+            matrixGrid.update();
+    }
 
     // Dãy tiêu đề trên
     Item {
@@ -49,7 +52,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "C" + (index + 1)
+                        text: "E" + (index + 1)
                     }
 
                     MouseArea {
@@ -94,7 +97,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "R" + (index + 1)
+                        text: "S" + (index + 1)
                     }
 
                     MouseArea {
@@ -173,20 +176,20 @@ Item {
                 Rectangle {
                     width: root.cellWidth
                     height: root.cellHeight
-                    color: root.costMatrix[row][col] === 0 ? "transparent" : typeof root.costMatrix[row][col] !== "number" ? Theme.onFocus : "#f8f8f8"
+                    color: root.costMatrix && root.costMatrix[row][col] === 0 ? "transparent" : typeof root.costMatrix[row][col] !== "number" ? Theme.onFocus : "#f8f8f8"
                     radius: 3
 
                     property int col
                     property int row
 
                     Text {
-                        visible: root.costMatrix[parent.row][parent.col] !== 0
+                        visible: root.costMatrix && root.costMatrix[parent.row][parent.col] !== 0
                         anchors.centerIn: parent
                         text: {
                             var val = root.costMatrix[parent.row][parent.col];
                             if (typeof val === "number")
-                                return val;
-                            return val.dist + val.weight;
+                                return val.toFixed(2);
+                            return (val.dist + val.weight) === Infinity ? "Inf" : (val.dist + val.weight).toFixed(2);
                         }
                     }
 
@@ -223,16 +226,12 @@ Item {
 
                 for (let i = 0; i < root.costMatrix.length; i++)
                     for (let j = 0; j < root.costMatrix[i].length; j++) {
-                        var newCell = cellComponent.createObject(matrixGrid, {
+                        const newCell = cellComponent.createObject(matrixGrid, {
                             row: i,
                             col: j
                         });
-                        if (newCell === null)
-                            console.log("Failed to create cell at", i, j);
                     }
             }
-
-            Component.onCompleted: update()
         }
     }
 }

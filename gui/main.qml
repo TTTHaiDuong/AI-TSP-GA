@@ -21,22 +21,6 @@ ApplicationWindow {
     Item {
         anchors.fill: parent
 
-        Drawer {
-            id: drawer
-            implicitWidth: parent.width - 70
-            implicitHeight: parent.height
-            modal: true
-            edge: Qt.LeftEdge
-            topPadding: 0
-            visible: root.narrow && root.drawerState
-
-            LeftPanel {
-                anchors.fill: parent
-                anchors.topMargin: 40
-                onInputClicked: drawer.close()
-            }
-        }
-
         // Container dãy công cụ trên cùng (nút save,...) + nội dung gồm hai control panel trái và phải
         ColumnLayout {
             anchors.fill: parent
@@ -57,24 +41,16 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                // handle: Rectangle {
-                //     // custom handle
-                //     width: 6             // chiều ngang handle
-                //     color: "#ff0000"     // đổi màu đỏ
-                //     radius: 3            // bo tròn góc
-                //     anchors.top: parent.top
-                //     anchors.bottom: parent.bottom
-                // }
-
                 // Control panel bên trái: điều chỉnh các tham số
-                NewLeftPanel {
+                LeftPanel {
                     openCostMatrix: true
                     visible: !root.narrow
                     SplitView.preferredWidth: 400
                     SplitView.minimumWidth: 300
+                    height: parent.height
                 }
 
-                // Control Panel bên phải: biểu đồ Route + Fitness
+                // Control Panel bên phải
                 RightPanel {
                     narrow: root.narrow
                     SplitView.fillWidth: true

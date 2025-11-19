@@ -1,23 +1,27 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Controls.Material
 import ".."
 
 Rectangle {
     id: root
     implicitHeight: 50
-    // border.width: 1
     color: "#f8f8f8"
     radius: 8
 
-    property int order: 1
+    property int order
     property var widths
 
     property int start
     property int end
-    property double forwardWeight
-    property double backwardWeight
+    property real forwardWeight
+    property real backwardWeight
+    property int directionType
+
+    onStartChanged: startSpin.value = start
+    onEndChanged: endSpin.value = end
+    onForwardWeightChanged: forwardWeightSpin.value = forwardWeight
+    onBackwardWeightChanged: backwardWeightSpin.value = backwardWeight
+    onDirectionTypeChanged: toggleBtn.type = directionType
 
     signal removeClicked(int order)
 
@@ -33,7 +37,7 @@ Rectangle {
 
             Text {
                 anchors.centerIn: parent
-                text: root.order + 1
+                text: root.order
                 font.bold: true
             }
         }
@@ -45,8 +49,9 @@ Rectangle {
             Layout.fillHeight: true
             color: "transparent"
             MaterialSpinBox {
+                id: startSpin
                 anchors.centerIn: parent
-                width: 60
+                width: Math.min(80, parent.width)
                 style: 1
                 onValueChanged: root.start = value
             }
@@ -59,8 +64,9 @@ Rectangle {
             Layout.fillHeight: true
             color: "transparent"
             MaterialSpinBox {
+                id: endSpin
                 anchors.centerIn: parent
-                width: 60
+                width: Math.min(80, parent.width)
                 style: 1
                 onValueChanged: root.end = value
             }
@@ -75,8 +81,9 @@ Rectangle {
             AToggleButton {
                 id: toggleBtn
                 anchors.centerIn: parent
-                width: 35
+                width: Math.min(50, parent.width)
                 height: 35
+                onTypeChanged: root.directionType = type
             }
         }
 
@@ -87,14 +94,16 @@ Rectangle {
             Layout.fillHeight: true
             color: "transparent"
             MaterialSpinBox {
+                id: forwardWeightSpin
                 visible: [1, 2].includes(toggleBtn.type)
                 anchors.centerIn: parent
-                width: 60
+                width: Math.min(80, parent.width)
                 style: 1
                 onValueChanged: root.forwardWeight = value
             }
 
             InfLabel {
+                width: Math.min(80, parent.width)
                 visible: [0, 3].includes(toggleBtn.type)
             }
         }
@@ -106,14 +115,16 @@ Rectangle {
             Layout.fillHeight: true
             color: "transparent"
             MaterialSpinBox {
+                id: backwardWeightSpin
                 visible: [0, 2].includes(toggleBtn.type)
                 anchors.centerIn: parent
-                width: 60
+                width: Math.min(80, parent.width)
                 style: 1
                 onValueChanged: root.backwardWeight = value
             }
 
             InfLabel {
+                width: Math.min(80, parent.width)
                 visible: [1, 3].includes(toggleBtn.type)
             }
         }

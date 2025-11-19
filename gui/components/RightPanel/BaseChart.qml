@@ -1,5 +1,4 @@
 import QtCharts
-import QtQuick.Controls
 import QtQuick
 import ".."
 
@@ -14,7 +13,7 @@ ChartView {
     smooth: true
     backgroundColor: "#f6f6f6ff"
 
-    property double padding: 1.0
+    property real padding: 1.0
     property color pointColor: "red"
     property color lineColor: "red"
     property alias axisX: axisX
@@ -24,14 +23,12 @@ ChartView {
 
     ValueAxis {
         id: axisX
-        min: 0
-        max: 1
+        max: 100
     }
 
     ValueAxis {
         id: axisY
-        min: 0
-        max: 1
+        max: 50
     }
 
     LineSeries {
@@ -41,7 +38,7 @@ ChartView {
         color: root.lineColor
         width: 2
 
-        onPointAdded: index => root._rescaleArea(at, index)
+        // onPointAdded: index => root._rescaleArea(at(index))
     }
 
     ScatterSeries {
@@ -52,7 +49,7 @@ ChartView {
         borderColor: "transparent"
         markerSize: 6
 
-        onPointAdded: index => root._rescaleArea(at, index)
+        onPointAdded: index => root._rescaleArea(at(index))
 
         onHovered: function (point, state) {
             if (state) {
@@ -95,14 +92,46 @@ ChartView {
         }
     }
 
-    function _rescaleArea(get, index) {
+    function getAll() {
+        const pts = [];
+        for (let i = 0; i < lineSeries.count; i++)
+            pts.push(lineSeries.at(i));
+        return pts;
+    }
+
+    function rescaleAxis() {
+        const pts = getAll();
+
+        let xValues = pts.map(p => p.x);
+        let xMax = Math.max(...xValues);
+        let xMin = Math.min(...xValues);
+
+        let yValues = pts.map(p => p.y);
+        let yMax = Math.max(...yValues);
+        let yMin = Math.min(...yValues);
+
+        console.log({
+            x: xMax,
+            y: yMax
+        }.y);
+
+        _rescaleArea({
+            x: xMax,
+            y: yMax
+        });
+        _rescaleArea({
+            x: xMin,
+            y: yMin
+        });
+    }
+
+    function _rescaleArea(pt) {
         Qt.callLater(() => {
             if (!root.padding)
                 return;
-            const pt = get(index);
             const pad = root.padding;
 
-            if (index === 0) {
+            if (!axisX.min) {
                 axisX.min = pt.x - pad;
                 axisX.max = pt.x + pad;
                 axisY.min = pt.y - pad;
@@ -117,25 +146,25 @@ ChartView {
         });
     }
 
-    // WheelHandler {
-    //     id: wheelZoom
-    //     acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-    //     onWheel: event => {
-    //         const zoomFactor = event.angleDelta.y > 0 ? 0.9 : 1.1; // phóng to / thu nhỏ
-    //         const centerX = (axisX.max + axisX.min) / 2;
-    //         const centerY = (axisY.max + axisY.min) / 2;
+    WheelHandler {
+        id: wheelZoom
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => {
+            const zoomFactor = event.angleDelta.y > 0 ? 0.9 : 1.1; // phóng to / thu nhỏ
+            const centerX = (axisX.max + axisX.min) / 2;
+            const centerY = (axisY.max + axisY.min) / 2;
 
-    //         const rangeX = (axisX.max - axisX.min) * zoomFactor;
-    //         const rangeY = (axisY.max - axisY.min) * zoomFactor;
+            const rangeX = (axisX.max - axisX.min) * zoomFactor;
+            const rangeY = (axisY.max - axisY.min) * zoomFactor;
 
-    //         axisX.min = centerX - rangeX / 2;
-    //         axisX.max = centerX + rangeX / 2;
-    //         axisY.min = centerY - rangeY / 2;
-    //         axisY.max = centerY + rangeY / 2;
+            axisX.min = centerX - rangeX / 2;
+            axisX.max = centerX + rangeX / 2;
+            axisY.min = centerY - rangeY / 2;
+            axisY.max = centerY + rangeY / 2;
 
-    //         event.accepted = true;
-    //     }
-    // }
+            event.accepted = true;
+        }
+    }
 
     // MouseArea {
     //     anchors.fill: parent
