@@ -2,49 +2,61 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
-import "../LeftPanel"
-import "../Bridge"
-import "../Comparison"
 import ".."
 
-Item {
+RowLayout {
     id: root
     implicitHeight: 160
 
+    property bool useSeed: seedCheck.checked
+    property int seed: seedInput.value
+    property real bestCost
+    property real time
+    property real memory
+
     signal run
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 50
+    Item {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
 
-        RowLayout {
-            Layout.fillHeight: true
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 30
+        MaterialButton {
+            id: runBtn
+            width: 100
+            height: 40
+            radius: 8
+            bgColor: "#6e6e6e"
+            anchors.centerIn: parent
 
-            MaterialButton {
-                id: runBtn
-                Layout.alignment: Qt.AlignHCenter
-                implicitWidth: 100
-                implicitHeight: 40
-                radius: 8
-                bgColor: "#6e6e6e"
-                Label {
-                    text: "Solve"
-                    color: "white"
-                    font.bold: true
-                    anchors.centerIn: parent
-                }
-
-                onClicked: root.run()
+            Label {
+                text: "Solve"
+                color: "white"
+                font.bold: true
+                anchors.centerIn: parent
             }
+
+            onClicked: root.run()
+        }
+    }
+
+    ColumnLayout {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
             Slider {
                 id: slider
                 from: 1
                 to: 1000
                 value: 50
-                Layout.fillWidth: true
+                anchors.left: parent.left
+                anchors.leftMargin: 40
+                anchors.right: parent.right
+                anchors.rightMargin: 40
+                anchors.verticalCenter: parent.verticalCenter
                 Material.accent: Theme.onFocus
 
                 Rectangle {
@@ -81,6 +93,139 @@ Item {
                     y: slider.handle.y - height - 6
                     x: slider.handle.x + slider.handle.width / 2 - width / 2
                     text: Math.round(slider.value)
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        spacing: 0
+
+                        Item {
+                            Layout.fillWidth: true
+                            implicitHeight: 16
+                            z: 1
+
+                            CheckBox {
+                                id: seedCheck
+                                text: "Seed"
+                                Material.accent: Theme.onFocus
+                                padding: 0
+                                verticalPadding: 0
+                                z: 10
+                            }
+                        }
+                        MaterialSpinBox {
+                            id: seedInput
+                            from: 0
+                            to: 9999
+                            enabled: seedCheck.checked
+                            grayedOut: !enabled
+                        }
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    ColumnLayout {
+                        anchors.centerIn: parent
+
+                        spacing: 0
+
+                        Item {
+                            Layout.fillWidth: true
+                            implicitHeight: 16
+                            z: 1
+
+                            CheckBox {
+                                id: earlyStoppingCheck
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                text: "Early Stopping (epoch)"
+                                Material.accent: Theme.onFocus
+                                padding: 0
+                                verticalPadding: 0
+                                z: 10
+                            }
+                        }
+                        MaterialSpinBox {
+                            id: earlyStoppingInput
+                            from: 0
+                            to: 9999
+                            enabled: earlyStoppingCheck.checked
+                            grayedOut: !enabled
+                        }
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ColumnLayout {
+                    Layout.fillHeight: true
+                    clip: true
+
+                    Text {
+                        id: bestCostTitle
+                        text: "Best Cost"
+                        font.bold: true
+                        font.pixelSize: 20
+                        elide: Qt.ElideRight
+                    }
+                    Text {
+                        text: root.bestCost
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+
+                    Layout.fillHeight: true
+                    clip: true
+
+                    Text {
+                        id: timeTitle
+                        text: "Time"
+                        font.bold: true
+                        font.pixelSize: 20
+                        elide: Qt.ElideRight
+                    }
+                    Text {
+                        text: root.time
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+
+                    Text {
+                        id: memoryTitle
+                        text: "Memory"
+                        font.bold: true
+                        font.pixelSize: 20
+                        elide: Qt.ElideRight
+                    }
+                    Text {
+                        text: root.memory
+                    }
                 }
             }
         }

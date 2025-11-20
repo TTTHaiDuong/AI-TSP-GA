@@ -11,15 +11,15 @@ Item {
 
     property int cellWidth: 60
     property int cellHeight: 40
-    property var costMatrix: [[0, 10, 15,
+    property var value: [[0, 10, 15,
             {
                 dist: 15,
                 weight: 5
             },
             25], [10, 0, 35, 25, 30], [15, 35, 0, 30, 20], [20, 25, 30, 0, 15], [25, 30, 20, 15, 0]]
 
-    onCostMatrixChanged: {
-        if (costMatrix && costMatrix.length >= 2)
+    onValueChanged: {
+        if (value && value.length >= 2)
             matrixGrid.update();
     }
 
@@ -39,7 +39,7 @@ Item {
         RowLayout {
             x: -scrollView.contentItem.contentX
             Repeater {
-                model: root.costMatrix.length
+                model: root.value.length
                 Rectangle {
                     id: cell
                     width: root.cellWidth
@@ -58,7 +58,7 @@ Item {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            if (root.costMatrix[index] !== undefined && parent.col < root.costMatrix[index].length) {
+                            if (root.value[index] !== undefined && parent.col < root.value[index].length) {
                                 const current = matrixGrid.selectedCell;
                                 matrixGrid.highlight((current && (mouse.modifiers & Qt.ControlModifier)) ? current.row : parent.row, parent.col);
                             }
@@ -85,7 +85,7 @@ Item {
         ColumnLayout {
             y: -scrollView.contentItem.contentY
             Repeater {
-                model: root.costMatrix.length
+                model: root.value.length
                 Rectangle {
                     width: root.cellWidth
                     height: root.cellHeight
@@ -104,7 +104,7 @@ Item {
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
                         onClicked: {
-                            if (parent.row < root.costMatrix.length) {
+                            if (parent.row < root.value.length) {
                                 const current = matrixGrid.selectedCell;
                                 matrixGrid.highlight(parent.row, (mouse.modifiers & Qt.ControlModifier && current) ? current.col : parent.col);
                             }
@@ -166,8 +166,8 @@ Item {
         GridLayout {
             id: matrixGrid
 
-            columns: root.costMatrix.length
-            rows: root.costMatrix.length
+            columns: root.value.length
+            rows: root.value.length
 
             property var selectedCell: null
 
@@ -176,17 +176,17 @@ Item {
                 Rectangle {
                     width: root.cellWidth
                     height: root.cellHeight
-                    color: root.costMatrix && root.costMatrix[row][col] === 0 ? "transparent" : typeof root.costMatrix[row][col] !== "number" ? Theme.onFocus : "#f8f8f8"
+                    color: root.value && root.value[row][col] === 0 ? "transparent" : typeof root.value[row][col] !== "number" ? Theme.onFocus : "#f8f8f8"
                     radius: 3
 
                     property int col
                     property int row
 
                     Text {
-                        visible: root.costMatrix && root.costMatrix[parent.row][parent.col] !== 0
+                        visible: root.value && root.value[parent.row][parent.col] !== 0
                         anchors.centerIn: parent
                         text: {
-                            var val = root.costMatrix[parent.row][parent.col];
+                            var val = root.value[parent.row][parent.col];
                             if (typeof val === "number")
                                 return val.toFixed(2);
                             return (val.dist + val.weight) === Infinity ? "Inf" : (val.dist + val.weight).toFixed(2);
@@ -224,8 +224,8 @@ Item {
             function update() {
                 clear();
 
-                for (let i = 0; i < root.costMatrix.length; i++)
-                    for (let j = 0; j < root.costMatrix[i].length; j++) {
+                for (let i = 0; i < root.value.length; i++)
+                    for (let j = 0; j < root.value[i].length; j++) {
                         const newCell = cellComponent.createObject(matrixGrid, {
                             row: i,
                             col: j

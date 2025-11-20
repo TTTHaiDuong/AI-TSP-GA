@@ -146,25 +146,25 @@ ChartView {
         });
     }
 
-    WheelHandler {
-        id: wheelZoom
-        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        onWheel: event => {
-            const zoomFactor = event.angleDelta.y > 0 ? 0.9 : 1.1; // phóng to / thu nhỏ
-            const centerX = (axisX.max + axisX.min) / 2;
-            const centerY = (axisY.max + axisY.min) / 2;
+    // WheelHandler {
+    //     id: wheelZoom
+    //     acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+    //     onWheel: event => {
+    //         const zoomFactor = event.angleDelta.y > 0 ? 0.9 : 1.1; // phóng to / thu nhỏ
+    //         const centerX = (axisX.max + axisX.min) / 2;
+    //         const centerY = (axisY.max + axisY.min) / 2;
 
-            const rangeX = (axisX.max - axisX.min) * zoomFactor;
-            const rangeY = (axisY.max - axisY.min) * zoomFactor;
+    //         const rangeX = (axisX.max - axisX.min) * zoomFactor;
+    //         const rangeY = (axisY.max - axisY.min) * zoomFactor;
 
-            axisX.min = centerX - rangeX / 2;
-            axisX.max = centerX + rangeX / 2;
-            axisY.min = centerY - rangeY / 2;
-            axisY.max = centerY + rangeY / 2;
+    //         axisX.min = centerX - rangeX / 2;
+    //         axisX.max = centerX + rangeX / 2;
+    //         axisY.min = centerY - rangeY / 2;
+    //         axisY.max = centerY + rangeY / 2;
 
-            event.accepted = true;
-        }
-    }
+    //         event.accepted = true;
+    //     }
+    // }
 
     // MouseArea {
     //     anchors.fill: parent

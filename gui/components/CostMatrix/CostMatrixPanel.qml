@@ -56,7 +56,7 @@ ColumnLayout {
                 if (currentIndex === 0)
                     citiesInput.updateFromBridge();
                 if (currentIndex === 1) {
-                    matrixTable.costMatrix = costMatrixBridge.generate_from(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
+                    matrixTable.value = costMatrixBridge.generate_from(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
                 }
                 if (currentIndex === 2)
                     rulesInput.updateFromBridge();
@@ -114,6 +114,7 @@ ColumnLayout {
                     anchors.top: parent.top
                     width: Math.min(parent.width, implicitWidth)
                     height: Math.min(parent.height, implicitHeight)
+                    onValueChanged: LeftRightPanelBridge.costMatrix = value
                 }
             }
         }

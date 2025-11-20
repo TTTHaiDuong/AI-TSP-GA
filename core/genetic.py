@@ -9,11 +9,7 @@ class GA:
         mutation_rate: float = 0.02,
         elite_size: int = 1,
         tournament_size: int = 3,
-        seed: int | None = None
     ):
-        if seed is not None:
-            np.random.seed(seed)
-
         self.cost_matrix = cost_matrix.astype(np.float64)
         self.n_cities = cost_matrix.shape[0]
         self.pop_size = population_size
@@ -22,10 +18,7 @@ class GA:
         self.elite_size = elite_size
         self.tournament_size = tournament_size
 
-        # Tạo hoán vị ngẫu nhiên các tuyến đường 
-        self.population = np.array(
-            [np.random.permutation(self.n_cities) for _ in range(self.pop_size)]
-        )
+        self.population = np.array([])
         self.costs = np.zeros(self.pop_size)
 
         # Sử dụng để đánh giá
@@ -47,7 +40,7 @@ class GA:
     
 
     def selection(self):
-        """@Deprecated - Thay thế bằng tournament_rank
+        """@Deprecated - Thay thế bằng tournament
         """
         # Random mảng chỉ số có pop_size phần tử với mỗi giá trị nằm trong [0, pop_size)
         idx1 = np.random.randint(0, self.pop_size, self.pop_size)
@@ -142,7 +135,14 @@ class GA:
         return self.population[idx], self.costs[idx]
     
 
-    def optimize(self, generations=100, verbose=True):
+    def optimize(self, generations=100, seed = None, verbose=True):
+        if seed is not None:
+            np.random.seed(seed)
+        
+        self.population = np.array(
+            [np.random.permutation(self.n_cities) for _ in range(self.pop_size)]
+        )
+
         best_cost_hist = []
         avg_cost_hist = []
         self.cost_func_call = 0

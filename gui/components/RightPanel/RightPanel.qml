@@ -13,7 +13,7 @@ Rectangle {
     property bool medium: width < 900
     property int previousTab
 
-    property var costChartValues: [[]]
+    property var costChartValues: [[], []]
 
     signal inputClicked
 
@@ -115,155 +115,177 @@ Rectangle {
             }
         }
 
-        StackLayout {
+        ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: tabBar.currentIndex
 
-            // Bản đồ và biểu đồ chi phí
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+            ScrollBar.vertical: ScrollBar {
+                id: cscrollBar
+                width: 12
+                policy: stackLayout.height > height ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+            }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: 40
+            StackLayout {
+                id: stackLayout
+                width: root.width
+                currentIndex: tabBar.currentIndex
 
-                    Text {
-                        text: "Genetic's Optimization"
-                        anchors.centerIn: parent
-                    }
-                }
-
-                RowLayout {
+                // Bản đồ và biểu đồ chi phí
+                ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    Item {
+                    Rectangle {
                         Layout.fillWidth: true
+                        implicitHeight: 40
+
+                        Text {
+                            text: "Genetic's Optimization"
+                            anchors.centerIn: parent
+                        }
                     }
 
-                    Item {
-                        Layout.preferredWidth: 480
-                        Layout.preferredHeight: 480
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
 
-                        MaterialButton {
-                            anchors.top: parent.top
-                            anchors.topMargin: -30
-                            anchors.left: parent.left
-                            anchors.leftMargin: 20
-                            implicitWidth: 30
-                            implicitHeight: 30
-                            bgColor: "transparent"
-                            radius: 8
+                        Item {
+                            Layout.fillWidth: true
+                        }
 
-                            Image {
-                                source: "../../assets/edit.svg"
-                                anchors.fill: parent
-                                anchors.margins: 2
-                                fillMode: Image.PreserveAspectFit
-                            }
+                        Item {
+                            Layout.preferredWidth: 480
+                            Layout.preferredHeight: 480
 
-                            onClicked: {
-                                if (!root.narrow)
-                                    LeftRightPanelBridge.costMatrixOpenRequest();
-                                else {
-                                    if (!drawer.opened)
+                            MaterialButton {
+                                anchors.top: parent.top
+                                anchors.topMargin: -30
+                                anchors.left: parent.left
+                                anchors.leftMargin: 20
+                                implicitWidth: 30
+                                implicitHeight: 30
+                                bgColor: "transparent"
+                                radius: 8
+
+                                Image {
+                                    source: "../../assets/edit.svg"
+                                    anchors.fill: parent
+                                    anchors.margins: 2
+                                    fillMode: Image.PreserveAspectFit
+                                }
+
+                                onClicked: {
+                                    if (!root.narrow)
                                         LeftRightPanelBridge.costMatrixOpenRequest();
-                                    drawer.open();
+                                    else {
+                                        if (!drawer.opened)
+                                            LeftRightPanelBridge.costMatrixOpenRequest();
+                                        drawer.open();
+                                    }
                                 }
                             }
+
+                            RouteMap {
+                                id: routeMap
+                                anchors.fill: parent
+                                Layout.alignment: Qt.AlignVCenter
+                            }
                         }
 
-                        RouteMap {
-                            id: routeMap
-                            anchors.fill: parent
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
+                        LineChart {
+                            Layout.preferredWidth: !root.medium ? 480 : 0
+                            Layout.preferredHeight: !root.medium ? 480 : 0
                             Layout.alignment: Qt.AlignVCenter
+
+                            margins.top: 5
+                            margins.bottom: 15
+                            margins.left: 5
+                            margins.right: 25
+
+                            values: root.costChartValues
+                            labels: ["Average cost", "Best cost"]
+
+                            backgroundColor: "#f6f6f6ff"
+                        }
+
+                        Item {
+                            Layout.fillWidth: !root.medium
                         }
                     }
 
-                    Item {
+                    RunAlgoPanel {
                         Layout.fillWidth: true
+
+                        onRun: {
+                            const cities = routeMap.getCities();
+                            if (cities.length === 0)
+                                return;
+                            if (VariablesProps.algoIndex === 0) {
+                                const matrix = costMatrixBridge.generate_from(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
+                                const result = optimizationBridge.genetic(matrix, VariablesProps.gaPopSize, VariablesProps.gaGenerations, VariablesProps.gaCrossover, VariablesProps.gaMutation, 1, 3, useSeed ? seed : -1);
+                                routeMap.setRoute(result.bestRoute);
+
+                                const avgCost = [];
+                                const bestCost = [];
+                                result.bestCostHist.forEach((y, i) => {
+                                    avgCost.push({
+                                        x: i,
+                                        y
+                                    });
+                                    bestCost.push({
+                                        x: i,
+                                        y: result.avgCostHist[i]
+                                    });
+                                });
+                                root.costChartValues = [avgCost, bestCost];
+                                this.bestCost = result.bestCost;
+                                this.time = result.time;
+                                this.memory = result.memory;
+                            }
+                        }
                     }
+                }
+
+                // Biểu đồ chi phí
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
                     LineChart {
                         title: "Cost"
-                        Layout.preferredWidth: !root.medium ? 480 : 0
-                        Layout.preferredHeight: !root.medium ? 480 : 0
-                        Layout.alignment: Qt.AlignVCenter
                         legend.visible: false
 
+                        anchors.centerIn: parent
                         margins.top: 5
                         margins.bottom: 15
                         margins.left: 5
                         margins.right: 25
 
+                        width: Math.max(500, parent.width - 80)
+                        height: 500
+
                         values: root.costChartValues
 
                         backgroundColor: "#f6f6f6ff"
                     }
-
-                    Item {
-                        Layout.fillWidth: !root.medium
-                    }
                 }
 
-                RunAlgoPanel {
+                // So sánh với các thuật toán + benchmark
+                ComparisonTab {
                     Layout.fillWidth: true
-
-                    onRun: {
-                        const cities = routeMap.getCities();
-                        if (cities.length === 0)
-                            return;
-                        if (VariablesProps.algoIndex === 0) {
-                            const result = optimizationBridge.genetic(cities, VariablesProps.gaPopSize, VariablesProps.gaGenerations, VariablesProps.gaCrossover, VariablesProps.gaMutation);
-                            routeMap.setRoute(result[0]);
-
-                            const cost = [];
-                            result[1].forEach((y, i) => {
-                                cost.push({
-                                    x: i,
-                                    y
-                                });
-                            });
-                            root.costChartValues = [cost];
-                        }
-                    }
+                    Layout.fillHeight: true
                 }
+
+                // Lịch sử giải bài toán
+                Item {}
             }
-
-            // Biểu đồ chi phí
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                LineChart {
-                    title: "Cost"
-                    legend.visible: false
-
-                    anchors.centerIn: parent
-                    margins.top: 5
-                    margins.bottom: 15
-                    margins.left: 5
-                    margins.right: 25
-
-                    width: Math.max(500, parent.width - 80)
-                    height: 500
-
-                    values: root.costChartValues
-
-                    backgroundColor: "#f6f6f6ff"
-                }
-            }
-
-            // So sánh với các thuật toán + benchmark
-            ComparisonTab {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-
-            // Lịch sử giải bài toán
-            Item {}
         }
     }
 

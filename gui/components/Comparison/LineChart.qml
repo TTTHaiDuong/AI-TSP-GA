@@ -7,7 +7,7 @@ ChartView {
     antialiasing: true
 
     property real padding: 1.0
-    property var alogNames: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
+    property var labels: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
     property var values: [[]]
 
     onValuesChanged: {
@@ -18,7 +18,7 @@ ChartView {
         axisy.max = padding;
 
         for (let i = 0; i < values.length; i++) {
-            var series = root.createSeries(ChartView.SeriesTypeLine, alogNames[i]);
+            var series = root.createSeries(ChartView.SeriesTypeLine, labels[i]);
             series.axisX = axisx;
             series.axisY = axisy;
 
@@ -41,12 +41,12 @@ ChartView {
         lines.length = 0;
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            root.clear();
-        }
-    }
+    // MouseArea {
+    //     anchors.fill: parent
+    //     onClicked: {
+    //         root.clear();
+    //     }
+    // }
 
     ValueAxis {
         id: axisx
