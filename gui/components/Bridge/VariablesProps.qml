@@ -9,6 +9,8 @@ QtObject {
     property int gaGenerations: 100
     property real gaCrossover: 0.1
     property real gaMutation: 0.03
+    property int gaEliteSize: 1
+    property int gaTournament: 3
 
     property int psoSwarmSize: 50
     property int psoIterations: 100

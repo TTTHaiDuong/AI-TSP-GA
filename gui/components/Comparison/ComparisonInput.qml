@@ -81,6 +81,22 @@ ColumnLayout {
                             "to": 1,
                             "step": 0.01
                         });
+                        gaParams.append({
+                            "prop": "gaEliteSize",
+                            "name": "Elite size",
+                            "value": ComparisonInputProps.gaEliteSize,
+                            "from": 1,
+                            "to": 100000,
+                            "step": 1
+                        });
+                        gaParams.append({
+                            "prop": "gaTournament",
+                            "name": "Tournament",
+                            "value": ComparisonInputProps.gaTournament,
+                            "from": 1,
+                            "to": 100000,
+                            "step": 1
+                        });
                     }
 
                     Repeater {
@@ -198,15 +214,154 @@ ColumnLayout {
             }
 
             DropPanel {
-                title: "SA"
-            }
-
-            DropPanel {
                 title: "ACO"
+
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: 20
+
+                    ListModel {
+                        id: acoParams
+                    }
+
+                    Component.onCompleted: {
+                        acoParams.append({
+                            "prop": "acoPopSize",
+                            "name": "Population size",
+                            "value": ComparisonInputProps.acoPopSize,
+                            "from": 1,
+                            "to": 1000,
+                            "step": 1
+                        });
+                        acoParams.append({
+                            "prop": "acoIterations",
+                            "name": "Number of iterations",
+                            "value": ComparisonInputProps.acoIterations,
+                            "from": 1,
+                            "to": 100000,
+                            "step": 1
+                        });
+                        acoParams.append({
+                            "prop": "acoAlpha",
+                            "name": "Alpha",
+                            "value": ComparisonInputProps.acoAlpha,
+                            "from": 1,
+                            "to": 100000,
+                            "step": 1
+                        });
+                        acoParams.append({
+                            "prop": "acoBeta",
+                            "name": "Beta",
+                            "value": ComparisonInputProps.acoBeta,
+                            "from": 0,
+                            "to": 50,
+                            "step": 0.1
+                        });
+                        acoParams.append({
+                            "prop": "acoRho",
+                            "name": "Rho",
+                            "value": ComparisonInputProps.acoRho,
+                            "from": 0,
+                            "to": 50,
+                            "step": 0.01
+                        });
+                    }
+
+                    Repeater {
+                        model: acoParams
+                        delegate: ColumnLayout {
+                            width: 130
+                            spacing: 0
+
+                            Label {
+                                text: model.name
+                            }
+                            MaterialSpinBox {
+                                from: model.from
+                                to: model.to
+                                step: model.step
+                                grayedOut: value === 0
+                                value: model.value
+                                onValueChanged: ComparisonInputProps[model.prop] = value
+                            }
+                        }
+                    }
+                }
             }
 
             DropPanel {
+                title: "SA"
+
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: 20
+
+                    ListModel {
+                        id: saParams
+                    }
+
+                    Component.onCompleted: {
+                        saParams.append({
+                            "prop": "saTmax",
+                            "name": "T max",
+                            "value": ComparisonInputProps.saTmax,
+                            "from": 1,
+                            "to": 1000,
+                            "step": 1
+                        });
+                        saParams.append({
+                            "prop": "saTmin",
+                            "name": "T min",
+                            "value": ComparisonInputProps.saTmin,
+                            "from": 1,
+                            "to": 100000,
+                            "step": 1
+                        });
+                        saParams.append({
+                            "prop": "saL",
+                            "name": "L",
+                            "value": ComparisonInputProps.saL,
+                            "from": 1,
+                            "to": 100000,
+                            "step": 1
+                        });
+                    }
+
+                    Repeater {
+                        model: saParams
+                        delegate: ColumnLayout {
+                            width: 130
+                            spacing: 0
+
+                            Label {
+                                text: model.name
+                            }
+                            MaterialSpinBox {
+                                from: model.from
+                                to: model.to
+                                step: model.step
+                                grayedOut: value === 0
+                                value: model.value
+                                onValueChanged: ComparisonInputProps[model.prop] = value
+                            }
+                        }
+                    }
+                }
+            }
+
+            DropPanel {
+                id: heldKarpPanel
                 title: "Held-Karp"
+
+                Item {
+                    implicitHeight: description.implicitHeight
+                    Label {
+                        id: description
+                        text: "Thuật toán Held-Karp chỉ sử dụng ma trận chi phí, không cần phải truyền tham số nào khác."
+                        wrapMode: Text.WordWrap
+                        width: heldKarpPanel.implicitWidth - 2 * heldKarpPanel.padding
+                    }
+                }
             }
         }
     }
@@ -227,12 +382,26 @@ ColumnLayout {
                     return;
                 }
             }
+            for (let i = 0; i < acoParams.count; i++) {
+                if (acoParams.get(i).prop === prop) {
+                    acoParams.setProperty(i, "value", v);
+                    return;
+                }
+            }
+            for (let i = 0; i < saParams.count; i++) {
+                if (saParams.get(i).prop === prop) {
+                    saParams.setProperty(i, "value", v);
+                    return;
+                }
+            }
         }
 
         onGaPopSizeChanged: onAnyUpdate("gaPopSize", ComparisonInputProps.gaPopSize)
         onGaGenerationsChanged: onAnyUpdate("gaGenerations", ComparisonInputProps.gaGenerations)
         onGaCrossoverChanged: onAnyUpdate("gaCrossover", ComparisonInputProps.gaCrossover)
         onGaMutationChanged: onAnyUpdate("gaMutation", ComparisonInputProps.gaMutation)
+        onGaEliteSizeChanged: onAnyUpdate("gaEliteSize", ComparisonInputProps.gaEliteSize)
+        onGaTournamentChanged: onAnyUpdate("gaTournament", ComparisonInputProps.gaTournament)
 
         onPsoSwarmSizeChanged: onAnyUpdate("psoSwarmSize", ComparisonInputProps.psoSwarmSize)
         onPsoIterationsChanged: onAnyUpdate("psoIterations", ComparisonInputProps.psoIterations)
@@ -241,5 +410,15 @@ ColumnLayout {
         onPsoCognitiveCoefChanged: onAnyUpdate("psoCognitiveCoef", ComparisonInputProps.psoCognitiveCoef)
         onPsoSocialCoefChanged: onAnyUpdate("psoSocialCoef", ComparisonInputProps.psoSocialCoef)
         onPsoVelocityClampingChanged: onAnyUpdate("psoVelocityClamping", ComparisonInputProps.psoVelocityClamping)
+
+        onAcoPopSizeChanged: onAnyUpdate("acoPopSize", ComparisonInputProps.acoPopSize)
+        onAcoIterationsChanged: onAnyUpdate("acoIterations", ComparisonInputProps.acoIterations)
+        onAcoAlphaChanged: onAnyUpdate("acoAlpha", ComparisonInputProps.acoAlpha)
+        onAcoBetaChanged: onAnyUpdate("acoBeta", ComparisonInputProps.acoBeta)
+        onAcoRhoChanged: onAnyUpdate("acoRho", ComparisonInputProps.acoRho)
+
+        onSaTmaxChanged: onAnyUpdate("saTmax", ComparisonInputProps.saTmax)
+        onSaTminChanged: onAnyUpdate("saTmin", ComparisonInputProps.saTmin)
+        onSaLChanged: onAnyUpdate("saL", ComparisonInputProps.saL)
     }
 }

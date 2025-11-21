@@ -1,9 +1,7 @@
-from PySide6.QtCore import QObject, Signal, Slot, QPointF
+from PySide6.QtCore import QObject, Slot
 import numpy as np
 
 class RouteBridge(QObject):
-    # Tín hiệu gửi list điểm (dạng [{x:..., y:...}, ...]) sang QML
-    randomized = Signal(list)
 
     @Slot(int, int, result=list)
     def randomize(self, n_points, seed=None):
@@ -14,7 +12,3 @@ class RouteBridge(QObject):
 
         result = [{"order": i + 1, "x": float(x), "y": float(y)} for i, (x, y) in enumerate(coords)]
         return result
-    
-    @Slot(list, result=list)
-    def solve_tsp(self, pts, **algo_params):
-        pass

@@ -4,18 +4,28 @@ import ".."
 
 ColumnLayout {
     id: root
+    spacing: 10
 
     property var algorithms: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
     property var states: [true, true, true, false, false]
     property var reasons: ["", "", "", "Over time", "Unspecified"]
     onStatesChanged: {
-        for (let i = 0; i < algorithms.length; i++) {
-            const newBar = barComponent.createObject(root, {
-                pass: states && states[i],
-                name: algorithms[i],
-                reason: reasons && reasons[i]
-            });
-        }
+        Qt.callLater(() => {
+            for (let i = 0; i < algorithms.length; i++) {
+                const newBar = barComponent.createObject(root, {
+                    pass: states && states[i],
+                    name: algorithms[i],
+                    reason: reasons && reasons[i]
+                });
+            }
+        });
+    }
+
+    Rectangle {
+        Layout.fillWidth: true
+        implicitHeight: 40
+        radius: 8
+        color: Theme.unFocus
     }
 
     Component {
@@ -26,7 +36,7 @@ ColumnLayout {
             radius: 8
             color: pass ? "#1eff00" : Theme.unFocus
             Layout.fillWidth: true
-            implicitHeight: 17
+            implicitHeight: 40
 
             property bool pass
             property string name

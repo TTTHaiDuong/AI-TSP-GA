@@ -82,6 +82,22 @@ DropPanel {
                     "to": 1,
                     "step": 0.01
                 });
+                gaParams.append({
+                    "prop": "gaEliteSize",
+                    "name": "Elite size",
+                    "value": ComparisonInputProps.gaEliteSize,
+                    "from": 1,
+                    "to": 100000,
+                    "step": 1
+                });
+                gaParams.append({
+                    "prop": "gaTournament",
+                    "name": "Tournament",
+                    "value": ComparisonInputProps.gaTournament,
+                    "from": 1,
+                    "to": 100000,
+                    "step": 1
+                });
             }
 
             Repeater {
@@ -220,6 +236,8 @@ DropPanel {
             onGaGenerationsChanged: onAnyUpdate("gaGenerations", VariablesProps.gaGenerations)
             onGaCrossoverChanged: onAnyUpdate("gaCrossover", VariablesProps.gaCrossover)
             onGaMutationChanged: onAnyUpdate("gaMutation", VariablesProps.gaMutation)
+            onGaEliteSizeChanged: onAnyUpdate("gaEliteSize", ComparisonInputProps.gaEliteSize)
+            onGaTournamentChanged: onAnyUpdate("gaTournament", ComparisonInputProps.gaTournament)
 
             onPsoSwarmSizeChanged: onAnyUpdate("psoSwarmSize", VariablesProps.psoSwarmSize)
             onPsoIterationsChanged: onAnyUpdate("psoIterations", VariablesProps.psoIterations)

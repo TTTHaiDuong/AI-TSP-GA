@@ -42,6 +42,17 @@ ColumnLayout {
                 Rectangle {
                     anchors.fill: parent
 
+                    PassAlgoList {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                    }
+                }
+            }
+
+            Page {
+                Rectangle {
+                    anchors.fill: parent
+
                     LineChart {
                         title: "Cost Convergence"
                         anchors.fill: parent
@@ -66,6 +77,7 @@ ColumnLayout {
                     anchors.fill: parent
 
                     BarChart {
+                        id: timeAndMemoryChart
                         title: "Execution Time & Memory Usage"
                         features: ["Time (ms)", "Memory (KB)"]
                         anchors.fill: parent
@@ -130,6 +142,23 @@ ColumnLayout {
 
                 RunButton {
                     anchors.centerIn: parent
+
+                    onRun: {
+                        const pMatrix = costMatrixBridge.buildPrototypeMatrix(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
+                        const fMatrix = costMatrixBridge.buildFinalMatrix(pMatrix);
+
+                        const algo = ["Genetic", "ACO", "SA", "Held-Karp"];
+                        const ga = optimizationBridge.runGA(fMatrix, ComparisonInputProps.gaPopSize, ComparisonInputProps.gaCrossover, ComparisonInputProps.gaMutation, ComparisonInputProps.gaEliteSize, ComparisonInputProps.gaTournament, ComparisonInputProps.gaGenerations, -1);
+                        const pso = optimizationBridge.runPSO(fMatrix, ComparisonInputProps.psoSwarmSize, ComparisonInputProps.psoInitVelocity, ComparisonInputProps.psoInertiaWeight, ComparisonInputProps.psoCognitiveCoef, ComparisonInputProps.psoSocialCoef, ComparisonInputProps.psoVelocityClamping, ComparisonInputProps.psoIterations, -1);
+                        const aco = optimizationBridge.runACO(fMatrix, ComparisonInputProps.acoPopSize, ComparisonInputProps.acoIterations, ComparisonInputProps.acoAlpha, ComparisonInputProps.acoBeta, ComparisonInputProps.acoRho);
+                        const sa = optimizationBridge.runSA(fMatrix, ComparisonInputProps.saTmax, ComparisonInputProps.saTmin, ComparisonInputProps.saL);
+                        const heldKarp = optimizationBridge.runHeldKarp(fMatrix);
+
+                        const timeOfAlgos = [ga.time, pso.time, aco.time, sa.time, heldKarp.time];
+                        const memoryOfAlgos = [ga.memory, pso.memory, aco.memory, sa.memory, heldKarp.memory];
+
+                        timeAndMemoryChart.values = [timeOfAlgos, memoryOfAlgos];
+                    }
                 }
             }
 
@@ -204,12 +233,11 @@ ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.preferredWidth: 2
-
-                PassAlgoList {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                }
             }
         }
+    }
+
+    Connections {
+        target: optimizationBridge
     }
 }

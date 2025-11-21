@@ -1,5 +1,8 @@
 import numpy as np
 
+from core.utils import OptimizationResult, time_memory_bench
+
+
 class GA:
     def __init__(
         self,
@@ -23,6 +26,7 @@ class GA:
 
         # Sử dụng để đánh giá
         self.cost_func_call = 0
+        self.np_rng = np.random.default_rng()
 
 
     def evaluate(self):
@@ -31,27 +35,16 @@ class GA:
 
         idx1 = pop[:, :-1]
         idx2 = pop[:, 1:]
-        last = pop[:, 0]
 
         self.costs = self.cost_matrix[idx1, idx2].sum(axis=1) \
-               + self.cost_matrix[last, pop[:, 0]] # Chi phí điểm cuối và điểm đầu     
+               + self.cost_matrix[pop[:, -1], pop[:, 0]] # Chi phí điểm cuối và điểm đầu     
         
         return self.costs
-    
-
-    def selection(self):
-        """@Deprecated - Thay thế bằng tournament
-        """
-        # Random mảng chỉ số có pop_size phần tử với mỗi giá trị nằm trong [0, pop_size)
-        idx1 = np.random.randint(0, self.pop_size, self.pop_size)
-        idx2 = np.random.randint(0, self.pop_size, self.pop_size)
-        better = np.where(self.costs[idx1] < self.costs[idx2], idx1, idx2)
-        return self.population[better]
-    
+        
 
     def tournament_selection(self):
         # Tạo ma trận random indices (pop_size x k)
-        candidates = np.random.randint(0, self.pop_size, size=(self.pop_size, self.tournament_size))
+        candidates = self.np_rng.integers(0, self.pop_size, size=(self.pop_size, self.tournament_size))
         # Lấy index cá thể thắng từng tournament
         winner_idx = np.argmin(self.costs[candidates], axis=1)
         winner_idx = candidates[np.arange(self.pop_size), winner_idx]
@@ -62,7 +55,7 @@ class GA:
         N = self.n_cities
         # Lựa chọn 2 phần tử không trùng lặp trong dãy [0, n)
         # Sắp xếp 2 phần tử này để start < end
-        start, end = sorted(np.random.choice(N, 2, replace=False))
+        start, end = sorted(self.np_rng.choice(N, 2, replace=False))
         child = np.full(N, -1)
         child[start:end] = parent1[start:end]
 
@@ -84,7 +77,7 @@ class GA:
         new_pop = []
         for i in range(0, self.pop_size, 2):
             p1, p2 = selected[i], selected[(i + 1) % self.pop_size]
-            if np.random.rand() < self.crossover_rate:
+            if self.np_rng.random() < self.crossover_rate:
                 c1 = self.order_crossover(p1, p2)
                 c2 = self.order_crossover(p2, p1)
             else:
@@ -99,7 +92,7 @@ class GA:
         pop_size = self.pop_size
 
         # Mask per-gene
-        mask = np.random.rand(pop_size, N) < self.mutation_rate
+        mask = self.np_rng.random((pop_size, N)) < self.mutation_rate
 
         # Chỉ lấy các cá thể có >=2 True
         valid = np.where(mask.sum(axis=1) >= 2)[0]
@@ -107,7 +100,7 @@ class GA:
             return
 
         # Chọn 2 vị trí swap cho mỗi cá thể valid
-        swap_pos = np.array([np.random.choice(np.where(mask[i])[0], 2, replace=False) for i in valid])
+        swap_pos = np.array([self.np_rng.choice(np.where(mask[i])[0], 2, replace=False) for i in valid])
 
         # Thực hiện swap vectorized
         population[valid, swap_pos[:, 0]], population[valid, swap_pos[:, 1]] = \
@@ -135,12 +128,11 @@ class GA:
         return self.population[idx], self.costs[idx]
     
 
-    def optimize(self, generations=100, seed = None, verbose=True):
-        if seed is not None:
-            np.random.seed(seed)
+    def run(self, generations=100, seed=None, verbose=True):
+        self.np_rng = np.random.default_rng(seed)
         
-        self.population = np.array(
-            [np.random.permutation(self.n_cities) for _ in range(self.pop_size)]
+        self.population = self.np_rng.permutation(
+            np.tile(np.arange(self.n_cities), (self.pop_size, 1))
         )
 
         best_cost_hist = []
@@ -159,13 +151,29 @@ class GA:
         
         best_route, best_cost = self.best()
         return {
-            "cost_func_call": self.cost_func_call,
             "avg_cost_hist": avg_cost_hist,
             "best_cost_hist": best_cost_hist,
-            "best_route": best_route,
-            "best_cost": best_cost
+            "best_cost": best_cost,
+            "best_route": best_route
         }
     
+
+def run(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size, max_iter, seed) -> OptimizationResult:
+    cost_matrix = np.asarray(cost_matrix, dtype=np.float64)
+    ga = GA(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size)
+
+    bench = time_memory_bench(ga.run, max_iter, seed)
+
+    return {
+        "avgCostHist": [float(x) for x in bench["result"]["avg_cost_hist"]],
+        "bestCost": float(bench["result"]["best_cost"]),
+        "bestCostHist": [float(x) for x in bench["result"]["best_cost_hist"]],
+        "bestRoute": bench["result"]["best_route"].tolist(),
+        "costFuncCall": ga.cost_func_call,
+        "memory": bench["memory_diff"],
+        "time": bench["time"]
+    }
+
 
 if __name__ == "__main__":
     np.random.seed(42)
@@ -177,7 +185,7 @@ if __name__ == "__main__":
     np.fill_diagonal(cost_matrix, np.inf)
 
     ga = GA(cost_matrix, population_size=100, mutation_rate=0.03)
-    best_route, best_distance = ga.optimize(generations=500)
+    best_route, best_distance = ga.run(generations=500)
 
     print("\nBest route:", best_route)
     print("Best distance:", best_distance)

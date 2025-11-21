@@ -227,28 +227,34 @@ Rectangle {
                             const cities = routeMap.getCities();
                             if (cities.length === 0)
                                 return;
-                            if (VariablesProps.algoIndex === 0) {
-                                const matrix = costMatrixBridge.generate_from(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
-                                const result = optimizationBridge.genetic(matrix, VariablesProps.gaPopSize, VariablesProps.gaGenerations, VariablesProps.gaCrossover, VariablesProps.gaMutation, 1, 3, useSeed ? seed : -1);
-                                routeMap.setRoute(result.bestRoute);
 
-                                const avgCost = [];
-                                const bestCost = [];
-                                result.bestCostHist.forEach((y, i) => {
-                                    avgCost.push({
-                                        x: i,
-                                        y
-                                    });
-                                    bestCost.push({
-                                        x: i,
-                                        y: result.avgCostHist[i]
-                                    });
+                            const pMatrix = costMatrixBridge.buildPrototypeMatrix(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
+                            const fMatrix = costMatrixBridge.buildFinalMatrix(pMatrix);
+
+                            let result;
+                            if (VariablesProps.algoIndex === 0)
+                                result = optimizationBridge.runGA(fMatrix, VariablesProps.gaPopSize, VariablesProps.gaCrossover, VariablesProps.gaMutation, VariablesProps.gaEliteSize, VariablesProps.gaTournament, VariablesProps.gaGenerations, useSeed ? seed : -1);
+                            else if (VariablesProps.algoIndex === 1)
+                                result = optimizationBridge.runPSO(fMatrix, VariablesProps.psoSwarmSize, VariablesProps.psoInitVelocity, VariablesProps.psoInertiaWeight, VariablesProps.psoCognitiveCoef, VariablesProps.psoSocialCoef, VariablesProps.psoVelocityClamping, VariablesProps.psoIterations, useSeed ? seed : -1);
+
+                            routeMap.setRoute(result.bestRoute);
+
+                            const avgCost = [];
+                            const bestCost = [];
+                            for (let i = 0; i < result.bestCostHist.length; i++) {
+                                avgCost.push({
+                                    x: i,
+                                    y: result.avgCostHist[i]
                                 });
-                                root.costChartValues = [avgCost, bestCost];
-                                this.bestCost = result.bestCost;
-                                this.time = result.time;
-                                this.memory = result.memory;
+                                bestCost.push({
+                                    x: i,
+                                    y: result.bestCostHist[i]
+                                });
                             }
+                            root.costChartValues = [avgCost, bestCost];
+                            this.bestCost = result.bestCost;
+                            this.time = result.time;
+                            this.memory = result.memory;
                         }
                     }
                 }

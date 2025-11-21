@@ -35,6 +35,13 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+        Label {
+            text: "✕"
+            anchors.right: parent.right
+            anchors.rightMargin: 15
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
         onClicked: {
             if (!("opened" in root.parent.parent))
                 LeftRightPanelBridge.costMatrixOpenRequest();
@@ -56,7 +63,7 @@ ColumnLayout {
                 if (currentIndex === 0)
                     citiesInput.updateFromBridge();
                 if (currentIndex === 1) {
-                    matrixTable.value = costMatrixBridge.generate_from(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
+                    matrixTable.value = costMatrixBridge.buildPrototypeMatrix(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
                 }
                 if (currentIndex === 2)
                     rulesInput.updateFromBridge();
@@ -102,7 +109,7 @@ ColumnLayout {
             Item {
                 anchors {
                     fill: parent
-                    topMargin: 40
+                    topMargin: 20
                     leftMargin: 20
                     rightMargin: 10
                     bottomMargin: 10
