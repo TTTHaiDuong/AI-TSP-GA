@@ -56,6 +56,21 @@ Column {
                 onClicked: root.editClicked()
             }
 
+            EyeButton {
+                id: showDirectionBtn
+                anchors.top: parent.top
+                anchors.topMargin: -30
+                anchors.left: parent.left
+                anchors.leftMargin: 60
+
+                onClicked: {
+                    if (value)
+                        routeMap.direction.show();
+                    else
+                        routeMap.direction.off();
+                }
+            }
+
             RouteMap {
                 id: routeMap
                 anchors.fill: parent
@@ -110,10 +125,11 @@ Column {
                         const mutation = VariablesProps.gaMutation;
                         const eliteSize = VariablesProps.gaEliteSize;
                         const tournament = VariablesProps.gaTournament;
+                        const twoOptMaxIter = VariablesProps.gaTwoOptCheck ? VariablesProps.gaTwoOptMaxIter : 0;
                         const generations = VariablesProps.gaGenerations;
                         const seed = useSeed ? this.seed : -1;
 
-                        result = optimizationBridge.runGA(fMatrix, popSize, crossover, mutation, eliteSize, tournament, generations, seed);
+                        result = optimizationBridge.runGA(fMatrix, popSize, crossover, mutation, eliteSize, tournament, twoOptMaxIter, generations, seed);
                         title.text = "Genetic's Optimization";
                     } else if (VariablesProps.algoIndex === 1) {
                         const swarmSize = VariablesProps.psoSwarmSize;
@@ -129,17 +145,29 @@ Column {
                         title.text = "PSO's Optimization";
                     }
 
+                    const finiteAvgCosts = result.avgCostHist.filter(v => Number.isFinite(v));
+                    const maxAvgCost = Math.max(...finiteAvgCosts);
+
+                    const finiteBestCosts = result.bestCostHist.filter(v => Number.isFinite(v));
+                    const maxBestCost = Math.max(...finiteAvgCosts);
+
                     const avgCost = result.avgCostHist.map((c, i) => ({
                                 x: i,
-                                y: c
+                                y: c === Infinity ? Math.max(maxBestCost, maxAvgCost) : c
                             }));
                     const bestCost = result.bestCostHist.map((c, i) => ({
                                 x: i,
-                                y: c
+                                y: c === Infinity ? Math.max(maxBestCost, maxAvgCost) : c
                             }));
 
                     root.costChartValues = [avgCost, bestCost];
                     routeMap.setRoute(result.bestRoute);
+
+                    if (showDirectionBtn.value)
+                        routeMap.direction.show();
+                    else
+                        routeMap.direction.off();
+
                     this.bestCosts = result.bestCostHist;
                     this.time = result.time;
                     this.memory = result.memory;

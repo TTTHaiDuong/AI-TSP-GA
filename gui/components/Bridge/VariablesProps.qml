@@ -11,6 +11,8 @@ QtObject {
     property real gaMutation: 0.03
     property int gaEliteSize: 1
     property int gaTournament: 3
+    property int gaTwoOptMaxIter: 5
+    property bool gaTwoOptCheck
 
     property int psoSwarmSize: 50
     property int psoIterations: 100

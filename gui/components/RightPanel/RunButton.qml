@@ -9,23 +9,19 @@ MaterialButton {
     radius: 8
     bgColor: "#6e6e6e"
 
-    property int currentState
+    property bool currentState
 
     signal run
     signal stop
-    signal reset
 
     onClicked: {
         run();
-        // if (currentState === 0) {
+
+        // currentState = !currentState;
+        // if (currentState) {
         //     run();
-        //     currentState = 1;
-        // } else if (currentState === 1) {
+        // } else {
         //     stop();
-        //     currentState = 0;
-        // } else if (currentState === 2) {
-        //     reset();
-        //     currentState = 0;
         // }
     }
 
@@ -33,19 +29,19 @@ MaterialButton {
         anchors.fill: parent
 
         Text {
-            text: ["Run", "Stop", "Reset"][root.currentState]
+            text: root.currentState ? "Stop" : "Run"
             color: "white"
             font.bold: true
             font.pixelSize: 16
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: 0.5
             Layout.fillWidth: true
-            horizontalAlignment: root.currentState === 1 ? Text.AlignRight : Text.AlignHCenter
+            horizontalAlignment: root.currentState ? Text.AlignRight : Text.AlignHCenter
         }
 
         Item {
-            visible: root.currentState === 1
-            Layout.preferredWidth: root.currentState === 1 ? 0.5 : 0
+            visible: root.currentState
+            Layout.preferredWidth: root.currentState ? 0.5 : 0
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -60,7 +56,7 @@ MaterialButton {
                 NumberAnimation on rotation {
                     from: 0
                     to: 360
-                    duration: 500
+                    duration: 2000
                     loops: Animation.Infinite
                     running: true
                 }

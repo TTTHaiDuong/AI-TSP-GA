@@ -3,6 +3,7 @@ import QtQuick
 Item {
     id: root
     property alias chart: chart
+    property alias direction: directedContainer
     property var labels: []
 
     BaseChart {
@@ -18,6 +19,37 @@ Item {
         axisX.max: 11
         axisY.min: -1
         axisY.max: 11
+    }
+
+    Item {
+        id: directedContainer
+        anchors.fill: parent
+
+        Component {
+            id: arrow
+            Arrow {
+                anchors.fill: parent
+            }
+        }
+
+        readonly property var route: []
+        readonly property var children: []
+
+        function show() {
+            off();
+            for (let i = 0; i < route.length; i++) {
+                const arrowComp = arrow.createObject(directedContainer, {
+                    startPoint: route[i],
+                    endPoint: route[(i + 1) % route.length]
+                });
+                children.push(arrowComp);
+            }
+        }
+
+        function off() {
+            children.forEach(c => c.destroy());
+            children.length = 0;
+        }
     }
 
     function getCities() {
@@ -36,9 +68,17 @@ Item {
 
     function setRoute(route) {
         chart.lineSeries.clear();
+        directedContainer.route.length = 0;
+
         for (let i = 0; i <= route.length; i++) {
             const point = chart.pointSeries.at(route[i % route.length]);
             chart.lineSeries.append(point.x, point.y);
+
+            const mappedPt = chart.mapToPosition(Qt.point(point.x, point.y), chart.lineSeries);
+            directedContainer.route.push({
+                x: mappedPt.x,
+                y: mappedPt.y
+            });
         }
     }
 

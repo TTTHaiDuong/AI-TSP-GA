@@ -43,7 +43,7 @@ DropPanel {
         Flow {
             visible: algoSelect.currentText === "Genetic"
             Layout.fillWidth: true
-            spacing: 30
+            spacing: 40
 
             ListModel {
                 id: gaParams
@@ -102,14 +102,15 @@ DropPanel {
 
             Repeater {
                 model: gaParams
-                delegate: ColumnLayout {
-                    width: 140
-                    spacing: 0
+                delegate: Column {
+                    width: 100
 
                     Label {
                         text: model.name
                     }
                     MaterialSpinBox {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
                         from: model.from
                         to: model.to
                         step: model.step
@@ -119,13 +120,43 @@ DropPanel {
                     }
                 }
             }
+
+            Column {
+                width: 100
+
+                CheckBox {
+                    id: twoOptCheck
+                    text: "2-opt max iterations"
+                    Material.accent: Theme.onFocus
+                    padding: 0
+                    verticalPadding: 0
+                    z: 10
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.rightMargin: -40
+                    height: 16
+                    checked: VariablesProps.gaTwoOptCheck
+                    onCheckedChanged: VariablesProps.gaTwoOptCheck = checked
+                }
+                MaterialSpinBox {
+                    id: twoOptMaxIterSpin
+                    from: 1
+                    to: 10
+                    enabled: twoOptCheck.checked
+                    grayedOut: !enabled
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    value: VariablesProps.gaTwoOptMaxIter
+                    onValueChanged: VariablesProps.gaTwoOptMaxIter = value
+                }
+            }
         }
 
         // Chế độ nhập các tham số PSO
         Flow {
             visible: algoSelect.currentText === "PSO"
             Layout.fillWidth: true
-            spacing: 30
+            spacing: 40
 
             ListModel {
                 id: psoParams
@@ -192,14 +223,15 @@ DropPanel {
 
             Repeater {
                 model: psoParams
-                delegate: ColumnLayout {
-                    width: 130
-                    spacing: 0
+                delegate: Column {
+                    width: 100
 
                     Label {
                         text: model.name
                     }
                     MaterialSpinBox {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
                         from: model.from
                         to: model.to
                         step: model.step
@@ -236,8 +268,10 @@ DropPanel {
             onGaGenerationsChanged: onAnyUpdate("gaGenerations", VariablesProps.gaGenerations)
             onGaCrossoverChanged: onAnyUpdate("gaCrossover", VariablesProps.gaCrossover)
             onGaMutationChanged: onAnyUpdate("gaMutation", VariablesProps.gaMutation)
-            onGaEliteSizeChanged: onAnyUpdate("gaEliteSize", ComparisonInputProps.gaEliteSize)
-            onGaTournamentChanged: onAnyUpdate("gaTournament", ComparisonInputProps.gaTournament)
+            onGaEliteSizeChanged: onAnyUpdate("gaEliteSize", VariablesProps.gaEliteSize)
+            onGaTournamentChanged: onAnyUpdate("gaTournament", VariablesProps.gaTournament)
+            onGaTwoOptMaxIterChanged: twoOptMaxIterSpin.value = VariablesProps.gaTwoOptMaxIter
+            onGaTwoOptCheckChanged: twoOptCheck.checked = VariablesProps.gaTwoOptCheck
 
             onPsoSwarmSizeChanged: onAnyUpdate("psoSwarmSize", VariablesProps.psoSwarmSize)
             onPsoIterationsChanged: onAnyUpdate("psoIterations", VariablesProps.psoIterations)

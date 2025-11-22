@@ -8,7 +8,7 @@ ColumnLayout {
 
     property var algorithms: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
     property var states: [true, true, true, true, true]
-    property var col1: ["", "", "", "Over time", "Unspecified"]
+    property var col1: ["", "", "", "", ""]
     property var col2
     property int currentIndex
     property var layoutRatio: [1, 2, 3, 2]

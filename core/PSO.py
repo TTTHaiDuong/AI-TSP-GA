@@ -1,6 +1,7 @@
 import numpy as np
 
-from core.utils import OptimizationResult, time_memory_bench
+from core.utils import OptimizationResult, time_memory_bench, batch_cost_func
+from core.two_opt import two_opt_population
 
 
 class PSO:
@@ -16,19 +17,22 @@ class PSO:
         self.init_velocity = init_velocity
         self.w, self.c1, self.c2, self.v_max = w, c1, c2, v_max
                 
-        # Global best
-        self.gbest_position = None
         self.gbest_cost = np.inf
-        self.best_route = None
         
 
-    def _batch_total_cost(self, positions: np.ndarray):
+    def decode_route(self, positions: np.ndarray):
         """Evaluate all particles' tours at once"""
-        routes = np.argsort(positions, axis=1)  # shape (n_particles, n_cities)
-        idx_from = routes
-        idx_to = np.roll(routes, -1, axis=1)
-        costs = self.cost_matrix[idx_from, idx_to]
-        return np.sum(costs, axis=1), routes
+        if positions.ndim == 1:
+            return np.argsort(positions)
+        return np.argsort(positions, axis=1)
+    
+
+    def evaluate(self):
+        self.cost_func_call += self.n_particles
+        routes = self.decode_route(self.positions)
+        self.pbest_cost = batch_cost_func(self.cost_matrix, routes)
+
+        return self.pbest_cost
 
 
     def run(self, iters=100, seed=None):
@@ -44,8 +48,7 @@ class PSO:
         avg_cost_hist = []
 
         for _ in range(iters):
-            costs, routes = self._batch_total_cost(self.positions)
-            self.cost_func_call += self.n_particles
+            costs = self.evaluate()
             
             improved = costs < self.pbest_cost
             self.pbest_positions[improved] = self.positions[improved]
@@ -54,8 +57,8 @@ class PSO:
             min_idx = np.argmin(costs)
             if costs[min_idx] < self.gbest_cost:
                 self.gbest_cost = costs[min_idx]
+                # Vì gbest_cost = np.inf nên gbest_position chắc nhắn được tạo
                 self.gbest_position = self.positions[min_idx].copy()
-                self.best_route = routes[min_idx]
 
             r1 = self.np_rng.random((self.n_particles, self.n_cities))
             r2 = self.np_rng.random((self.n_particles, self.n_cities))
@@ -68,16 +71,17 @@ class PSO:
 
             self.positions += self.velocities
             # Chuẩn hoá tránh tràn khỏi [0, 1]
-            self.positions = (self.positions - self.positions.min()) / (self.positions.max() - self.positions.min())
+            self.positions = (self.positions - self.positions.min(axis=1, keepdims=True)) / \
+                 (self.positions.max(axis=1, keepdims=True) - self.positions.min(axis=1, keepdims=True) + 1e-10)            
             
             avg_cost_hist.append(np.mean(costs))
             best_cost_hist.append(self.gbest_cost)
         
         return {
             "avg_cost_hist": avg_cost_hist,
-            "best_cost_hist": best_cost_hist,
+            "best_cost_hist": [float(x) for x in best_cost_hist],
             "best_cost": self.gbest_cost, 
-            "best_route": self.best_route
+            "best_route": self.decode_route(self.gbest_position)
         }
     
 

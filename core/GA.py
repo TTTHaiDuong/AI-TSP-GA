@@ -1,6 +1,7 @@
 import numpy as np
 
-from core.utils import OptimizationResult, time_memory_bench
+from core.utils import OptimizationResult, time_memory_bench, batch_cost_func
+from core.two_opt import two_opt_population
 
 
 class GA:
@@ -12,6 +13,7 @@ class GA:
         mutation_rate: float = 0.02,
         elite_size: int = 1,
         tournament_size: int = 3,
+        two_opt_max: int = 5
     ):
         self.cost_matrix = cost_matrix.astype(np.float64)
         self.n_cities = cost_matrix.shape[0]
@@ -20,6 +22,7 @@ class GA:
         self.mutation_rate = mutation_rate
         self.elite_size = elite_size
         self.tournament_size = tournament_size
+        self.two_opt_max = two_opt_max
 
         self.population = np.array([])
         self.costs = np.zeros(self.pop_size)
@@ -30,14 +33,8 @@ class GA:
 
 
     def evaluate(self):
-        self.cost_func_call += 1
-        pop = self.population
-
-        idx1 = pop[:, :-1]
-        idx2 = pop[:, 1:]
-
-        self.costs = self.cost_matrix[idx1, idx2].sum(axis=1) \
-               + self.cost_matrix[pop[:, -1], pop[:, 0]] # Chi phí điểm cuối và điểm đầu     
+        self.cost_func_call += self.pop_size # Chức năng đếm số lần gọi cost function
+        self.costs = batch_cost_func(self.cost_matrix, self.population)
         
         return self.costs
 
@@ -105,7 +102,7 @@ class GA:
         # Thực hiện swap vectorized
         population[valid, swap_pos[:, 0]], population[valid, swap_pos[:, 1]] = \
             population[valid, swap_pos[:, 1]], population[valid, swap_pos[:, 0]]
-
+        
 
     def evolve(self):
         if self.elite_size > 0:
@@ -115,6 +112,9 @@ class GA:
         selected = self.tournament_selection()
         offspring = self.crossover_population(selected)
         self.per_gen_mutate(offspring)
+
+        if self.two_opt_max > 0:
+            offspring = two_opt_population(offspring, self.cost_matrix, self.two_opt_max)
         
         if self.elite_size > 0:
             offspring[:self.elite_size] = elite
@@ -158,9 +158,9 @@ class GA:
         }
     
 
-def run(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size, max_iter, seed) -> OptimizationResult:
+def run(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size, two_opt_max, max_iter, seed) -> OptimizationResult:
     cost_matrix = np.asarray(cost_matrix, dtype=np.float64)
-    ga = GA(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size)
+    ga = GA(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size, two_opt_max)
 
     bench = time_memory_bench(ga.run, max_iter, seed)
 
@@ -173,41 +173,3 @@ def run(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tourna
         "memory": bench["memory_diff"],
         "time": bench["time"]
     }
-
-
-if __name__ == "__main__":
-    np.random.seed(42)
-
-    # Tạo ma trận chi phí ngẫu nhiên (đối xứng)
-    n = 10
-    coords = np.random.rand(n, 2) * 100
-    cost_matrix = np.sqrt(((coords[:, None, :] - coords[None, :, :]) ** 2).sum(axis=2))
-    np.fill_diagonal(cost_matrix, np.inf)
-
-    ga = GA(cost_matrix, population_size=100, mutation_rate=0.03)
-    best_route, best_distance = ga.run(generations=500)
-
-    print("\nBest route:", best_route)
-    print("Best distance:", best_distance)
-
-    import matplotlib.pyplot as plt
-
-    route_coords = coords[np.append(best_route, best_route[0])]
-
-    # Vẽ các thành phố
-    plt.figure(figsize=(8, 6))
-    plt.scatter(coords[:, 0], coords[:, 1], c='red', s=100, label='Cities')
-
-    # Vẽ đường đi
-    plt.plot(route_coords[:, 0], route_coords[:, 1], c='blue', linewidth=2, label='Route')
-
-    # Ghi nhãn thành phố
-    for i, (x, y) in enumerate(coords):
-        plt.text(x + 1, y + 1, str(i), fontsize=12)
-
-    plt.title(f'Best TSP Route (Distance: {best_distance:.2f})')
-    plt.xlabel('X coordinate')
-    plt.ylabel('Y coordinate')
-    plt.legend()
-    plt.grid(True)
-    plt.show()

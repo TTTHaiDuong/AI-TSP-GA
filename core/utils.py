@@ -1,4 +1,4 @@
-import psutil, os, time, math
+import time, math
 import tracemalloc
 import numpy as np
 from typing import TypedDict, NotRequired
@@ -19,17 +19,23 @@ def euclid(a, b):
     return math.sqrt((a["x"] - b["x"])**2 + (a["y"] - b["y"])**2)
 
 
+def batch_cost_func(cost_matrix, routes):
+    idx1 = routes[:, :-1] # [[0, 1, 2], [0, 2, 3]]
+    idx2 = routes[:, 1:]  # [[1, 2, 3], [2, 3, 4]]
+
+    costs = cost_matrix[idx1, idx2].sum(axis=1) \
+        + cost_matrix[routes[:, -1], routes[:, 0]] # Chi phí điểm cuối và điểm đầu     
+        
+    return costs
+    
+
 def cost_func(cost_matrix, route) -> float:
     route = np.asarray(route)
-    next = np.roll(route, -1)
-    return cost_matrix[route, next].sum()
+    routes = route[None, :]
+    return batch_cost_func(cost_matrix, routes)[0]
 
-
-
-# process = psutil.Process(os.getpid())
 
 def time_memory_bench(func, *params, **dict_params):    
-    # ram_before = process.memory_info().rss
     tracemalloc.start()
     start_time = time.perf_counter()
 
@@ -38,7 +44,6 @@ def time_memory_bench(func, *params, **dict_params):
     current, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     end_time = time.perf_counter()
-    # ram_after = process.memory_info().rss
 
     return {
         "result": result,

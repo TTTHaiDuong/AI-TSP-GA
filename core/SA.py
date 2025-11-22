@@ -23,7 +23,7 @@ def run(cost_matrix: np.ndarray, T_max, T_min, L) -> OptimizationResult:
 
     return {
         "bestCost": float(bench["result"][1]),
-        "bestCostHist": sa.best_y_history,
+        "bestCostHist": [float(x) for x in sa.best_y_history],
         "bestRoute": [int(x) for x in bench["result"][0]],
         "costFuncCall": cost_func_call,
         "memory": bench["memory_diff"],

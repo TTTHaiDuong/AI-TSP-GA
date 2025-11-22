@@ -27,7 +27,7 @@ Canvas {
     id: root
     property point startPoint
     property point endPoint
-    property color color: "green"
+    property color color: "blue"
     property color crossColor: "red"
     property real lineWidth: 2
     property real arrowSize: 8

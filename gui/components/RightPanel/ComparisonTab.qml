@@ -74,6 +74,21 @@ Column {
                                 onClicked: root.editClicked()
                             }
 
+                            EyeButton {
+                                id: showDirectionBtn
+                                anchors.top: parent.top
+                                anchors.topMargin: -30
+                                anchors.left: parent.left
+                                anchors.leftMargin: 60
+
+                                onClicked: {
+                                    if (value)
+                                        routeMap.direction.show();
+                                    else
+                                        routeMap.direction.off();
+                                }
+                            }
+
                             RouteMap {
                                 id: routeMap
                                 anchors.fill: parent
@@ -95,8 +110,14 @@ Column {
                                 property var bestRoutes
 
                                 function showRoute() {
-                                    if (bestRoutes && bestRoutes[currentIndex])
+                                    if (bestRoutes && bestRoutes[currentIndex]) {
                                         routeMap.setRoute(bestRoutes[currentIndex]);
+
+                                        if (showDirectionBtn.value)
+                                            routeMap.direction.show();
+                                        else
+                                            routeMap.direction.off();
+                                    }
                                 }
 
                                 onBestRoutesChanged: showRoute()
@@ -106,17 +127,6 @@ Column {
                     }
                 }
             }
-
-            // Page {
-            //     Rectangle {
-            //         anchors.fill: parent
-
-            //         LineChart {
-            //             title: "Cost Convergence"
-            //             anchors.fill: parent
-            //         }
-            //     }
-            // }
 
             Page {
                 Rectangle {
@@ -211,10 +221,11 @@ Column {
                                 return;
 
                             const pMatrix = costMatrixBridge.buildPrototypeMatrix(cities, AsymmetricRulesInputProps.rules || []);
-                            const fMatrix = costMatrixBridge.buildFinalMatrix(pMatrix);
+                            let fMatrix = costMatrixBridge.buildFinalMatrix(pMatrix);
+                            fMatrix = fMatrix.map(r => r.map(c => Number.isFinite(c) ? c : 1e6));
 
                             const algo = ["Genetic", "PSO", "ACO", "SA", "Held-Karp"];
-                            const ga = optimizationBridge.runGA(fMatrix, ComparisonInputProps.gaPopSize, ComparisonInputProps.gaCrossover, ComparisonInputProps.gaMutation, ComparisonInputProps.gaEliteSize, ComparisonInputProps.gaTournament, ComparisonInputProps.gaGenerations, -1);
+                            const ga = optimizationBridge.runGA(fMatrix, ComparisonInputProps.gaPopSize, ComparisonInputProps.gaCrossover, ComparisonInputProps.gaMutation, ComparisonInputProps.gaEliteSize, ComparisonInputProps.gaTournament, 5, ComparisonInputProps.gaGenerations, -1);
                             const pso = optimizationBridge.runPSO(fMatrix, ComparisonInputProps.psoSwarmSize, ComparisonInputProps.psoInitVelocity, ComparisonInputProps.psoInertiaWeight, ComparisonInputProps.psoCognitiveCoef, ComparisonInputProps.psoSocialCoef, ComparisonInputProps.psoVelocityClamping, ComparisonInputProps.psoIterations, -1);
                             const aco = optimizationBridge.runACO(fMatrix, ComparisonInputProps.acoPopSize, ComparisonInputProps.acoIterations, ComparisonInputProps.acoAlpha, ComparisonInputProps.acoBeta, ComparisonInputProps.acoRho);
                             const sa = optimizationBridge.runSA(fMatrix, ComparisonInputProps.saTmax, ComparisonInputProps.saTmin, ComparisonInputProps.saL);
@@ -231,6 +242,9 @@ Column {
                             passAlgoList.bestRoutes = [ga.bestRoute, pso.bestRoute, aco.bestRoute, sa.bestRoute, heldKarp.bestRoute];
                             passAlgoList.col1 = bestCostsFixed;
                             passAlgoList.col2 = bestCosts.map(v => (Math.abs(v - heldKarp.bestCost) / heldKarp.bestCost).toFixed(2));
+
+                            console.log([ga.bestCostHist, pso.bestCostHist, aco.bestCostHist, sa.bestCostHist].map(r => r.filter(c => Number.isFinite(c))));
+                            costConvergence.values = [ga.bestCostHist, pso.bestCostHist, aco.bestCostHist, sa.bestCostHist].map(r => r.filter(c => Number.isFinite(c)));
                         }
                     }
                 }
