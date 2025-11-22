@@ -354,9 +354,8 @@ ColumnLayout {
                 title: "Held-Karp"
 
                 Item {
-                    implicitHeight: description.implicitHeight
+                    height: 400
                     Label {
-                        id: description
                         text: "Thuật toán Held-Karp chỉ sử dụng ma trận chi phí, không cần phải truyền tham số nào khác."
                         wrapMode: Text.WordWrap
                         width: heldKarpPanel.implicitWidth - 2 * heldKarpPanel.padding

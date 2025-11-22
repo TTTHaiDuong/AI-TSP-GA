@@ -40,7 +40,7 @@ class GA:
                + self.cost_matrix[pop[:, -1], pop[:, 0]] # Chi phí điểm cuối và điểm đầu     
         
         return self.costs
-        
+
 
     def tournament_selection(self):
         # Tạo ma trận random indices (pop_size x k)

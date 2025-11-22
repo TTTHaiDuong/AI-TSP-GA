@@ -4,6 +4,7 @@ import math
 
 from core.utils import euclid
 
+
 def distance_matrix_np(points):
     points = np.array(points)
     diff = points[:, np.newaxis, :] - points[np.newaxis, :, :]
@@ -72,6 +73,7 @@ class CostMatrixBridge(QObject):
 
         return matrix
     
+
     @Slot(list, result=list)
     def buildFinalMatrix(self, matrix):
         normalized = []

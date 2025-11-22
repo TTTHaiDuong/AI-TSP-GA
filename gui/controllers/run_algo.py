@@ -8,11 +8,11 @@ from core.SA import run as run_SA
 from core.Held_Karp import run as run_Held_Karp
 
 
-def distance_matrix_np(points):
-    points = np.array(points)
-    diff = points[:, np.newaxis, :] - points[np.newaxis, :, :]
-    dist = np.sqrt(np.sum(diff ** 2, axis=-1))
-    return dist
+# def distance_matrix_np(points):
+#     points = np.array(points)
+#     diff = points[:, np.newaxis, :] - points[np.newaxis, :, :]
+#     dist = np.sqrt(np.sum(diff ** 2, axis=-1))
+#     return dist
 
 
 class RunAlgorithmsBridge(QObject):
@@ -36,3 +36,4 @@ class RunAlgorithmsBridge(QObject):
     @Slot(list, result=dict)
     def runHeldKarp(self, matrix):
         return run_Held_Karp(matrix)
+    

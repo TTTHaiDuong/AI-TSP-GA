@@ -7,25 +7,26 @@ ColumnLayout {
     spacing: 10
 
     property var algorithms: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
-    property var states: [true, true, true, false, false]
-    property var reasons: ["", "", "", "Over time", "Unspecified"]
+    property var states: [true, true, true, true, true]
+    property var col1: ["", "", "", "Over time", "Unspecified"]
+    property var col2
+    property int currentIndex
+    property var layoutRatio: [1, 2, 3, 2]
+
     onStatesChanged: {
         Qt.callLater(() => {
-            for (let i = 0; i < algorithms.length; i++) {
-                const newBar = barComponent.createObject(root, {
-                    pass: states && states[i],
-                    name: algorithms[i],
-                    reason: reasons && reasons[i]
-                });
+            for (let i = -1; i < algorithms.length; i++) {
+                const barProps = i !== -1 ? {
+                    currentIndex: i
+                } : {
+                    currentIndex: -1,
+                    color: "#cccccc",
+                    col1: "Best cost",
+                    col2: "Error (%)"
+                };
+                const newBar = barComponent.createObject(root, barProps);
             }
         });
-    }
-
-    Rectangle {
-        Layout.fillWidth: true
-        implicitHeight: 40
-        radius: 8
-        color: Theme.unFocus
     }
 
     Component {
@@ -34,43 +35,56 @@ ColumnLayout {
         Rectangle {
             id: bar
             radius: 8
-            color: pass ? "#1eff00" : Theme.unFocus
+            color: pass ? (root.currentIndex === currentIndex ? Theme.onFocus : Theme.primaryLight) : Theme.unFocus
             Layout.fillWidth: true
             implicitHeight: 40
 
-            property bool pass
-            property string name
-            property string reason
+            property bool pass: root.states && root.states[currentIndex] ? root.states[currentIndex] : ""
+            property string name: root.algorithms && root.algorithms[currentIndex] ? root.algorithms[currentIndex] : ""
+            property string col1: root.col1 && root.col1[currentIndex] ? root.col1[currentIndex] : ""
+            property string col2: root.col2 && root.col2[currentIndex] ? root.col2[currentIndex] : ""
+            property int currentIndex
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: root.currentIndex = bar.currentIndex
+            }
 
             RowLayout {
                 anchors.fill: parent
 
                 Text {
-                    Layout.preferredWidth: 1
+                    Layout.preferredWidth: root.layoutRatio[0]
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     elide: Qt.ElideRight
-                    text: bar.pass ? "✓" : "✕"
+                    text: bar.currentIndex >= 0 ? (bar.pass ? "✓" : "✕") : ""
                     color: bar.pass ? "black" : "red"
                 }
 
                 Text {
-                    Layout.preferredWidth: 2
+                    Layout.preferredWidth: root.layoutRatio[1]
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignVCenter
                     elide: Qt.ElideRight
-                    horizontalAlignment: Text.AlignHCenter
                     text: bar.name
                 }
 
                 Text {
-                    Layout.preferredWidth: 3
+                    Layout.preferredWidth: root.layoutRatio[2]
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignVCenter
                     elide: Qt.ElideRight
-                    horizontalAlignment: Text.AlignHCenter
-                    text: bar.reason
+                    text: bar.col1
+                }
+
+                Text {
+                    Layout.preferredWidth: root.layoutRatio[3]
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    elide: Qt.ElideRight
+                    text: bar.col2
                 }
             }
         }

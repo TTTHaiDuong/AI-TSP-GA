@@ -5,8 +5,9 @@ import ".."
 ChartView {
     id: root
     antialiasing: true
+    backgroundColor: "#f6f6f6ff"
 
-    property var values: [[1, 2, 125, 4, 5], [1, 2, 3, 4, 5]]
+    property var values
     property var features
     property var normalizedValues
     property real barWidth: 0.8

@@ -42,7 +42,7 @@ Control {
 
             // Hiệu ứng khi focus
             Rectangle {
-                width: root.isFocus
+                width: root.isFocus ? parent.width : 0
                 height: 2
                 color: Theme.onFocus
                 radius: 1

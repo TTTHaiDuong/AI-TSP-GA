@@ -13,8 +13,6 @@ Rectangle {
     property bool medium: width < 900
     property int previousTab
 
-    property var costChartValues: [[], []]
-
     signal inputClicked
 
     border.width: 1
@@ -25,6 +23,16 @@ Rectangle {
             tabBar.currentIndex = previousTab;
         if (!medium && tabBar.currentIndex === 1)
             tabBar.currentIndex = 0;
+    }
+
+    function openRouteMapEdit() {
+        if (!root.narrow)
+            LeftRightPanelBridge.costMatrixOpenRequest();
+        else {
+            if (!drawer.opened)
+                LeftRightPanelBridge.costMatrixOpenRequest();
+            drawer.open();
+        }
     }
 
     Drawer {
@@ -104,7 +112,7 @@ Rectangle {
                     onClicked: root.previousTab = 1
                 }
                 Repeater {
-                    model: ["Comparison", "History"]
+                    model: ["Comparison"]
                     delegate: TabButton {
                         text: modelData
                         width: 100
@@ -116,6 +124,7 @@ Rectangle {
         }
 
         ScrollView {
+            id: scrollView
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -130,144 +139,24 @@ Rectangle {
 
             StackLayout {
                 id: stackLayout
-                width: root.width
+                width: scrollView.width
+                height: scrollView.height
                 currentIndex: tabBar.currentIndex
 
                 // Bản đồ và biểu đồ chi phí
-                ColumnLayout {
+                RouteAndCostTab {
+                    id: routeNCostTab
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: 40
-
-                        Text {
-                            text: "Genetic's Optimization"
-                            anchors.centerIn: parent
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        Item {
-                            Layout.fillWidth: true
-                        }
-
-                        Item {
-                            Layout.preferredWidth: 480
-                            Layout.preferredHeight: 480
-
-                            MaterialButton {
-                                anchors.top: parent.top
-                                anchors.topMargin: -30
-                                anchors.left: parent.left
-                                anchors.leftMargin: 20
-                                implicitWidth: 30
-                                implicitHeight: 30
-                                bgColor: "transparent"
-                                radius: 8
-
-                                Image {
-                                    source: "../../assets/edit.svg"
-                                    anchors.fill: parent
-                                    anchors.margins: 2
-                                    fillMode: Image.PreserveAspectFit
-                                }
-
-                                onClicked: {
-                                    if (!root.narrow)
-                                        LeftRightPanelBridge.costMatrixOpenRequest();
-                                    else {
-                                        if (!drawer.opened)
-                                            LeftRightPanelBridge.costMatrixOpenRequest();
-                                        drawer.open();
-                                    }
-                                }
-                            }
-
-                            RouteMap {
-                                id: routeMap
-                                anchors.fill: parent
-                                Layout.alignment: Qt.AlignVCenter
-                            }
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                        }
-
-                        LineChart {
-                            Layout.preferredWidth: !root.medium ? 480 : 0
-                            Layout.preferredHeight: !root.medium ? 480 : 0
-                            Layout.alignment: Qt.AlignVCenter
-
-                            margins.top: 5
-                            margins.bottom: 15
-                            margins.left: 5
-                            margins.right: 25
-
-                            values: root.costChartValues
-                            labels: ["Average cost", "Best cost"]
-
-                            backgroundColor: "#f6f6f6ff"
-                        }
-
-                        Item {
-                            Layout.fillWidth: !root.medium
-                        }
-                    }
-
-                    RunAlgoPanel {
-                        Layout.fillWidth: true
-
-                        onRun: {
-                            const cities = routeMap.getCities();
-                            if (cities.length === 0)
-                                return;
-
-                            const pMatrix = costMatrixBridge.buildPrototypeMatrix(CitiesInputProps.cities || [], AsymmetricRulesInputProps.rules || []);
-                            const fMatrix = costMatrixBridge.buildFinalMatrix(pMatrix);
-
-                            let result;
-                            if (VariablesProps.algoIndex === 0)
-                                result = optimizationBridge.runGA(fMatrix, VariablesProps.gaPopSize, VariablesProps.gaCrossover, VariablesProps.gaMutation, VariablesProps.gaEliteSize, VariablesProps.gaTournament, VariablesProps.gaGenerations, useSeed ? seed : -1);
-                            else if (VariablesProps.algoIndex === 1)
-                                result = optimizationBridge.runPSO(fMatrix, VariablesProps.psoSwarmSize, VariablesProps.psoInitVelocity, VariablesProps.psoInertiaWeight, VariablesProps.psoCognitiveCoef, VariablesProps.psoSocialCoef, VariablesProps.psoVelocityClamping, VariablesProps.psoIterations, useSeed ? seed : -1);
-
-                            routeMap.setRoute(result.bestRoute);
-
-                            const avgCost = [];
-                            const bestCost = [];
-                            for (let i = 0; i < result.bestCostHist.length; i++) {
-                                avgCost.push({
-                                    x: i,
-                                    y: result.avgCostHist[i]
-                                });
-                                bestCost.push({
-                                    x: i,
-                                    y: result.bestCostHist[i]
-                                });
-                            }
-                            root.costChartValues = [avgCost, bestCost];
-                            this.bestCost = result.bestCost;
-                            this.time = result.time;
-                            this.memory = result.memory;
-                        }
-                    }
+                    onEditClicked: root.openRouteMapEdit()
                 }
 
                 // Biểu đồ chi phí
                 Item {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
 
                     LineChart {
-                        title: "Cost"
-                        legend.visible: false
-
                         anchors.centerIn: parent
                         margins.top: 5
                         margins.bottom: 15
@@ -277,20 +166,19 @@ Rectangle {
                         width: Math.max(500, parent.width - 80)
                         height: 500
 
-                        values: root.costChartValues
+                        values: routeNCostTab.costChartValues
 
                         backgroundColor: "#f6f6f6ff"
                     }
                 }
 
-                // So sánh với các thuật toán + benchmark
+                // So sánh với các thuật toán
                 ComparisonTab {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                }
 
-                // Lịch sử giải bài toán
-                Item {}
+                    onEditClicked: root.openRouteMapEdit()
+                }
             }
         }
     }
@@ -301,11 +189,5 @@ Rectangle {
 
     Connections {
         target: routeBridge
-    }
-
-    Connections {
-        target: CitiesInputProps
-
-        onCitiesChanged: routeMap.setCities(CitiesInputProps.cities)
     }
 }

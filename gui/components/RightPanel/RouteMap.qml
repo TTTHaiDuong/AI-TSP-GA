@@ -45,9 +45,7 @@ Item {
     function setCities(nodesList) {
         chart.pointSeries.clear();
 
-        // Xóa các label cũ
-        labels.forEach(l => l.destroy());
-        labels = [];
+        clearLabel();
 
         nodesList.forEach((n, idx) => {
             chart.pointSeries.append(n.x, n.y);
@@ -65,6 +63,11 @@ Item {
             });
             labels.push(label);
         });
+    }
+
+    function clearLabel() {
+        labels.forEach(l => l.destroy());
+        labels = [];
     }
 
     function updateLabels() {

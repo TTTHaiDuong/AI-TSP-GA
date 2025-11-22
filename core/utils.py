@@ -1,4 +1,5 @@
 import psutil, os, time, math
+import tracemalloc
 import numpy as np
 from typing import TypedDict, NotRequired
 
@@ -24,19 +25,24 @@ def cost_func(cost_matrix, route) -> float:
     return cost_matrix[route, next].sum()
 
 
-def time_memory_bench(func, *params, **dict_params):
-    process = psutil.Process(os.getpid())
-    start_mem = process.memory_info().rss
-    start = time.perf_counter()
+
+# process = psutil.Process(os.getpid())
+
+def time_memory_bench(func, *params, **dict_params):    
+    # ram_before = process.memory_info().rss
+    tracemalloc.start()
+    start_time = time.perf_counter()
 
     result = func(*params, **dict_params)
 
-    end = time.perf_counter()
-    end_mem = process.memory_info().rss
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    end_time = time.perf_counter()
+    # ram_after = process.memory_info().rss
 
     return {
         "result": result,
-        "time": end - start,
-        "memory_diff": end_mem - start_mem,
-        "memory_total": end_mem
+        "time": end_time - start_time,
+        "memory_diff": current,
+        "memory_total": peak
     }

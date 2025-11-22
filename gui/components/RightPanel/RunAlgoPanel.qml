@@ -4,19 +4,24 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import ".."
 
-RowLayout {
+GridLayout {
     id: root
-    implicitHeight: 160
+    columns: 2
+    rows: 2
+    rowSpacing: 0
 
     property bool useSeed: seedCheck.checked
     property int seed: seedInput.value
-    property real bestCost
+    property var bestCosts
     property real time
     property real memory
+    property int sliderValue: Math.round(slider.value)
 
     signal run
+    signal clear
 
     Item {
+        Layout.preferredWidth: 1
         Layout.fillWidth: true
         Layout.fillHeight: true
 
@@ -39,7 +44,114 @@ RowLayout {
         }
     }
 
-    ColumnLayout {
+    Item {
+        Layout.preferredWidth: 4
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+
+        Slider {
+            id: slider
+            from: 1
+            to: root.bestCosts ? root.bestCosts.length : 1
+            anchors.left: parent.left
+            anchors.leftMargin: 40
+            anchors.right: parent.right
+            anchors.rightMargin: 40
+            anchors.verticalCenter: parent.verticalCenter
+            height: 20
+            Material.accent: root.bestCosts ? Theme.onFocus : Theme.unFocus
+
+            onToChanged: {
+                if (root.bestCosts)
+                    slider.value = Math.min(root.bestCosts.length, slider.to);
+                else
+                    slider.value = slider.from;
+            }
+
+            Rectangle {
+                implicitWidth: 100
+                color: "#ffffffff"
+                radius: 8
+                anchors.bottom: parent.top
+                anchors.bottomMargin: 20
+                Label {
+                    text: root.bestCosts ? ("Iteration " + Math.round(slider.value) + "/" + slider.to) : "Iteration __ /__"
+                    anchors.left: parent.left
+                    anchors.leftMargin: 5
+                }
+            }
+
+            MouseArea {
+                id: blockInteraction
+                anchors.fill: parent
+                acceptedButtons: root.bestCosts ? Qt.NoButton : Qt.AllButtons
+                hoverEnabled: true
+
+                onPositionChanged: {
+                    if (slider.to <= slider.from)
+                        return;
+
+                    sliderTooltip.visible = true;
+
+                    let ratio = mouse.x / width;
+                    ratio = Math.max(0, Math.min(1, ratio)); // clamp 0..1
+
+                    let valueAtMouse = slider.from + ratio * (slider.to - slider.from);
+
+                    sliderTooltip.text = Math.round(valueAtMouse);
+                    sliderTooltip.x = mouse.x - sliderTooltip.width / 2;
+                    sliderTooltip.y = slider.handle.y - sliderTooltip.height - 8;
+                }
+
+                onExited: {
+                    sliderTooltip.visible = false;
+                }
+            }
+
+            Tooltip {
+                id: sliderTooltip
+                visible: false
+            }
+
+            Tooltip {
+                visible: slider.pressed
+                y: slider.handle.y - height - 8
+                x: slider.handle.x + slider.handle.width / 2 - width / 2
+                text: Math.round(slider.value)
+            }
+        }
+    }
+
+    Item {
+        Layout.preferredWidth: 1
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+
+        MaterialButton {
+            anchors.centerIn: parent
+            width: 32
+            height: 32
+            bgColor: "transparent"
+            radius: 8
+
+            Image {
+                source: "../../assets/clear.svg"
+                fillMode: Image.PreserveAspectFit
+                anchors.fill: parent
+                anchors.margins: 4
+            }
+
+            onClicked: {
+                root.bestCosts = undefined;
+                root.time = 0;
+                root.memory = 0;
+                root.clear();
+            }
+        }
+    }
+
+    RowLayout {
+        Layout.preferredWidth: 4
         Layout.fillWidth: true
         Layout.fillHeight: true
 
@@ -47,184 +159,85 @@ RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            Slider {
-                id: slider
-                from: 1
-                to: 1000
-                value: 50
+            Column {
+                width: 100
                 anchors.left: parent.left
                 anchors.leftMargin: 40
-                anchors.right: parent.right
-                anchors.rightMargin: 40
                 anchors.verticalCenter: parent.verticalCenter
-                Material.accent: Theme.onFocus
+                spacing: 5
 
-                Rectangle {
-                    implicitWidth: 100
-                    color: "#ffffffff"
-                    radius: 8
-                    anchors.bottom: parent.top
-                    anchors.bottomMargin: 5
-                    Label {
-                        text: "Epoch " + Math.round(slider.value) + "/" + slider.to + " (Early Stopping)"
-                        anchors.left: parent.left
-                        anchors.leftMargin: 5
-                    }
+                CheckBox {
+                    id: seedCheck
+                    text: "Seed"
+                    Material.accent: Theme.onFocus
+                    padding: 0
+                    verticalPadding: 0
+                    z: 10
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 16
                 }
-
-                onValueChanged:
-                // console.log("Giá trị Slider:", value);
-                {}
-
-                // MouseArea {
-                //     id: hoverArea
-                //     anchors.fill: parent
-                //     hoverEnabled: true
-                //     onPositionChanged: {
-                //         // Tính toán giá trị tương ứng theo vị trí chuột
-                //         let rel = Math.max(0, Math.min(1, mouse.x / width));
-                //         slider.value = slider.from + rel * (slider.to - slider.from);
-                //     }
-                // }
-
-                Tooltip {
-                    id: sliderTooltip
-                    visible: slider.pressed
-                    y: slider.handle.y - height - 6
-                    x: slider.handle.x + slider.handle.width / 2 - width / 2
-                    text: Math.round(slider.value)
+                MaterialSpinBox {
+                    id: seedInput
+                    from: 0
+                    to: 9999
+                    style: 1
+                    enabled: seedCheck.checked
+                    grayedOut: !enabled
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                 }
             }
         }
 
-        RowLayout {
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
             RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                id: benchContainer
+                anchors.fill: parent
+                spacing: 0
 
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                property bool narrow: width < 275
 
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 0
-
-                        Item {
-                            Layout.fillWidth: true
-                            implicitHeight: 16
-                            z: 1
-
-                            CheckBox {
-                                id: seedCheck
-                                text: "Seed"
-                                Material.accent: Theme.onFocus
-                                padding: 0
-                                verticalPadding: 0
-                                z: 10
-                            }
-                        }
-                        MaterialSpinBox {
-                            id: seedInput
-                            from: 0
-                            to: 9999
-                            enabled: seedCheck.checked
-                            grayedOut: !enabled
-                        }
-                    }
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    ColumnLayout {
-                        anchors.centerIn: parent
-
-                        spacing: 0
-
-                        Item {
-                            Layout.fillWidth: true
-                            implicitHeight: 16
-                            z: 1
-
-                            CheckBox {
-                                id: earlyStoppingCheck
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                text: "Early Stopping (epoch)"
-                                Material.accent: Theme.onFocus
-                                padding: 0
-                                verticalPadding: 0
-                                z: 10
-                            }
-                        }
-                        MaterialSpinBox {
-                            id: earlyStoppingInput
-                            from: 0
-                            to: 9999
-                            enabled: earlyStoppingCheck.checked
-                            grayedOut: !enabled
-                        }
-                    }
-                }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                ColumnLayout {
-                    Layout.fillHeight: true
-                    clip: true
-
+                Column {
                     Text {
                         id: bestCostTitle
-                        text: "Best Cost"
+                        text: benchContainer.narrow ? "C" : "Best Cost"
                         font.bold: true
                         font.pixelSize: 20
                         elide: Qt.ElideRight
                     }
                     Text {
-                        text: root.bestCost
+                        text: root.bestCosts && root.bestCosts[root.sliderValue - 1] !== undefined ? root.bestCosts[root.sliderValue - 1].toFixed(3) : "___"
                     }
                 }
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-
-                    Layout.fillHeight: true
-                    clip: true
-
+                Column {
                     Text {
                         id: timeTitle
-                        text: "Time"
+                        text: benchContainer.narrow ? "T" : "Time"
                         font.bold: true
                         font.pixelSize: 20
                         elide: Qt.ElideRight
+                        anchors.left: parent.left
                     }
                     Text {
-                        text: root.time
+                        text: root.time ? root.time.toFixed(4) + " s" : "___"
                     }
                 }
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    clip: true
-
+                Column {
                     Text {
                         id: memoryTitle
-                        text: "Memory"
+                        text: benchContainer.narrow ? "M" : "Memory"
                         font.bold: true
                         font.pixelSize: 20
                         elide: Qt.ElideRight
                     }
                     Text {
-                        text: root.memory
+                        text: root.memory ? root.memory + " KB" : "___"
                     }
                 }
             }

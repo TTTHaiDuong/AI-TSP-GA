@@ -22,9 +22,9 @@ def run(cost_matrix: np.ndarray, T_max, T_min, L) -> OptimizationResult:
     bench = time_memory_bench(sa.run)
 
     return {
-        "bestCost": bench["result"][1],
+        "bestCost": float(bench["result"][1]),
         "bestCostHist": sa.best_y_history,
-        "bestRoute": bench["result"][0],
+        "bestRoute": [int(x) for x in bench["result"][0]],
         "costFuncCall": cost_func_call,
         "memory": bench["memory_diff"],
         "time": bench["time"]

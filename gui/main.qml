@@ -9,11 +9,12 @@ import "components/RightPanel"
 ApplicationWindow {
     id: root
     title: "TSP Solver"
-    width: 1200
-    height: 800
     color: Theme.background
     minimumWidth: 500
     minimumHeight: 400
+    width: Screen.width
+    height: Screen.height
+    visible: Window.Maximized
 
     property bool narrow: width <= 900
     property bool drawerState
@@ -45,7 +46,7 @@ ApplicationWindow {
                 LeftPanel {
                     openCostMatrix: true
                     visible: !root.narrow
-                    SplitView.preferredWidth: 400
+                    SplitView.preferredWidth: 500
                     SplitView.minimumWidth: 300
                     height: parent.height
                 }
@@ -56,7 +57,7 @@ ApplicationWindow {
                     SplitView.fillWidth: true
                     SplitView.minimumWidth: 500
 
-                    onInputClicked: drawer.open()
+                    // onInputClicked: drawer.open()
                 }
             }
         }

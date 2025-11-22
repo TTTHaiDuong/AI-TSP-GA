@@ -1,6 +1,6 @@
 import numpy as np
-np.int = int
 from sko.ACA import ACA_TSP
+np.int = int # Thư viện sko còn sử dụng API numpy cũ
 
 from core.utils import OptimizationResult, cost_func, time_memory_bench
 
@@ -22,9 +22,9 @@ def run(cost_matrix, size_pop, max_iter, alpha, beta, rho) -> OptimizationResult
     bench = time_memory_bench(aco.run)
     
     return {
-        "bestCost": bench["result"][1],
+        "bestCost": float(bench["result"][1]),
         "bestCostHist": aco.y_best_history,
-        "bestRoute": bench["result"][0],
+        "bestRoute": [int(x) for x in bench["result"][0]],
         "costFuncCall": cost_func_call,
         "memory": bench["memory_diff"],
         "time": bench["time"]

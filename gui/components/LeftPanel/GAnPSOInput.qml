@@ -17,7 +17,7 @@ DropPanel {
             implicitHeight: description.implicitHeight
             Label {
                 id: description
-                text: "Generate the topology however you like by adjusting these parameters.\nThe app will keep a highscore for every different topology created."
+                text: "Điều chỉnh các tham số thuật toán."
                 wrapMode: Text.WordWrap
                 color: "#555555"
                 width: root.implicitWidth - 2 * root.padding

@@ -5,7 +5,7 @@ import ".."
 MaterialButton {
     id: root
     implicitWidth: 120
-    implicitHeight: 50
+    implicitHeight: 40
     radius: 8
     bgColor: "#6e6e6e"
 
@@ -16,16 +16,17 @@ MaterialButton {
     signal reset
 
     onClicked: {
-        if (currentState === 0) {
-            run();
-            currentState = 1;
-        } else if (currentState === 1) {
-            stop();
-            currentState = 0;
-        } else if (currentState === 2) {
-            reset();
-            currentState = 0;
-        }
+        run();
+        // if (currentState === 0) {
+        //     run();
+        //     currentState = 1;
+        // } else if (currentState === 1) {
+        //     stop();
+        //     currentState = 0;
+        // } else if (currentState === 2) {
+        //     reset();
+        //     currentState = 0;
+        // }
     }
 
     RowLayout {

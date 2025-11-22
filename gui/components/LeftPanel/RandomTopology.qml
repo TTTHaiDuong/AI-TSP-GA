@@ -25,18 +25,19 @@ DropPanel {
 
         Flow {
             Layout.fillWidth: true
-            spacing: 30
+            spacing: 40
 
             // Nhập số lượng thành phố
-            ColumnLayout {
+            Column {
                 width: 100
-                spacing: 0
 
                 Label {
                     text: "Cities"
                 }
                 MaterialSpinBox {
                     id: citiesNumInput
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     from: 5
                     to: 200
                     value: RandTopologyProps.citiesNum
@@ -45,27 +46,24 @@ DropPanel {
             }
 
             // Nhập random seed
-            ColumnLayout {
+            Column {
                 width: 100
-                spacing: 0
 
-                Item {
-                    implicitHeight: 16
-                    z: 1
-
-                    CheckBox {
-                        id: seedCheckBox
-                        text: "Seed"
-                        Material.accent: Theme.onFocus
-                        padding: 0
-                        verticalPadding: 0
-                        z: 10
-                        checked: RandTopologyProps.useSeed
-                        onCheckedChanged: RandTopologyProps.useSeed = checked
-                    }
+                CheckBox {
+                    id: seedCheckBox
+                    text: "Seed"
+                    Material.accent: Theme.onFocus
+                    padding: 0
+                    verticalPadding: 0
+                    height: 16
+                    z: 10
+                    checked: RandTopologyProps.useSeed
+                    onCheckedChanged: RandTopologyProps.useSeed = checked
                 }
                 MaterialSpinBox {
                     id: seedInput
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     from: 0
                     to: 9999
                     enabled: seedCheckBox.checked
@@ -76,17 +74,18 @@ DropPanel {
             }
 
             // Nút khởi tạo
-            ColumnLayout {
+            Column {
                 width: 100
-                spacing: 0
 
                 Item {
-                    implicitHeight: 16
+                    width: 1
+                    height: 16
                 }
                 MaterialButton {
                     text: "Generate"
-                    implicitWidth: 100
-                    implicitHeight: 30
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 30
                     radius: 8
 
                     onClicked: {
@@ -99,10 +98,19 @@ DropPanel {
 
         Connections {
             target: RandTopologyProps
-            onExpandedChanged: root.expanded = RandTopologyProps.expanded
-            onCitiesNumChanged: citiesNumInput.value = RandTopologyProps.citiesNum
-            onUseSeedChanged: seedCheckBox.checked = RandTopologyProps.useSeed
-            onSeedChanged: seedInput.value = RandTopologyProps.seed
+
+            function onExpandedChanged() {
+                root.expanded = RandTopologyProps.expanded;
+            }
+            function onCitiesNumChanged() {
+                citiesNumInput.value = RandTopologyProps.citiesNum;
+            }
+            function onUseSeedChanged() {
+                seedCheckBox.checked = RandTopologyProps.useSeed;
+            }
+            function onSeedChanged() {
+                seedInput.value = RandTopologyProps.seed;
+            }
         }
 
         Connections {
