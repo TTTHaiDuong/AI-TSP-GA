@@ -132,6 +132,19 @@ Column {
                 Rectangle {
                     anchors.fill: parent
 
+                    LineChart {
+                        id: costConvergence
+                        title: "Cost Convergence"
+                        labels: ["Genetic", "PSO", "ACO", "SA"]
+                        anchors.fill: parent
+                    }
+                }
+            }
+
+            Page {
+                Rectangle {
+                    anchors.fill: parent
+
                     BarChart {
                         id: bestCostNFuncCallChart
                         title: "Best Cost & Cost Function Call"
@@ -244,7 +257,12 @@ Column {
                             passAlgoList.col2 = bestCosts.map(v => (Math.abs(v - heldKarp.bestCost) / heldKarp.bestCost).toFixed(2));
 
                             console.log([ga.bestCostHist, pso.bestCostHist, aco.bestCostHist, sa.bestCostHist].map(r => r.filter(c => Number.isFinite(c))));
-                            costConvergence.values = [ga.bestCostHist, pso.bestCostHist, aco.bestCostHist, sa.bestCostHist].map(r => r.filter(c => Number.isFinite(c)));
+                            costConvergence.values = [ga.bestCostHist, pso.bestCostHist, aco.bestCostHist, sa.bestCostHist].map(arr => arr.map((c, i) => ({
+                                            x: i,
+                                            y: c
+                                        }))       // chuyển thành object {x, y}
+                                .filter(p => Number.isFinite(p.y))     // loại bỏ NaN/Infinity
+                            );
                         }
                     }
                 }
