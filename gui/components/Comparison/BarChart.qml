@@ -41,7 +41,7 @@ ChartView {
 
     BarCategoryAxis {
         id: axisX
-        categories: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
+        categories: ["Genetic", "BCO", "ACO", "SA", "Held-Karp"]
     }
 
     ValueAxis {

@@ -8,7 +8,7 @@ ChartView {
     backgroundColor: "#f6f6f6ff"
 
     property real padding: 1.0
-    property var labels: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
+    property var labels: ["Genetic", "BCO", "ACO", "SA", "Held-Karp"]
     property var values: [[], [], [], [], []]
 
     onValuesChanged: {

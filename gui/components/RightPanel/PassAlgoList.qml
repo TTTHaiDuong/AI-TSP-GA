@@ -6,7 +6,7 @@ ColumnLayout {
     id: root
     spacing: 10
 
-    property var algorithms: ["Genetic", "PSO", "ACO", "SA", "Held-Karp"]
+    property var algorithms: ["Genetic", "BCO", "ACO", "SA", "Held-Karp"]
     property var states: [true, true, true, true, true]
     property var col1: ["", "", "", "", ""]
     property var col2

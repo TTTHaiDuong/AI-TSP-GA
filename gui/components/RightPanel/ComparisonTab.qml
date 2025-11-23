@@ -135,7 +135,7 @@ Column {
                     LineChart {
                         id: costConvergence
                         title: "Cost Convergence"
-                        labels: ["Genetic", "PSO", "ACO", "SA"]
+                        labels: ["Genetic", "BCO", "ACO", "SA"]
                         anchors.fill: parent
                     }
                 }
@@ -237,9 +237,9 @@ Column {
                             let fMatrix = costMatrixBridge.buildFinalMatrix(pMatrix);
                             fMatrix = fMatrix.map(r => r.map(c => Number.isFinite(c) ? c : 1e6));
 
-                            const algo = ["Genetic", "PSO", "ACO", "SA", "Held-Karp"];
+                            const algo = ["Genetic", "BCO", "ACO", "SA", "Held-Karp"];
                             const ga = optimizationBridge.runGA(fMatrix, ComparisonInputProps.gaPopSize, ComparisonInputProps.gaCrossover, ComparisonInputProps.gaMutation, ComparisonInputProps.gaEliteSize, ComparisonInputProps.gaTournament, 5, ComparisonInputProps.gaGenerations, -1);
-                            const pso = optimizationBridge.runPSO(fMatrix, ComparisonInputProps.psoSwarmSize, ComparisonInputProps.psoInitVelocity, ComparisonInputProps.psoInertiaWeight, ComparisonInputProps.psoCognitiveCoef, ComparisonInputProps.psoSocialCoef, ComparisonInputProps.psoVelocityClamping, ComparisonInputProps.psoIterations, -1);
+                            const pso = optimizationBridge.runBCO(fMatrix, ComparisonInputProps.psoSwarmSize, ComparisonInputProps.psoInitVelocity, ComparisonInputProps.psoInertiaWeight, ComparisonInputProps.psoCognitiveCoef, ComparisonInputProps.psoSocialCoef, ComparisonInputProps.psoVelocityClamping, ComparisonInputProps.psoIterations, -1);
                             const aco = optimizationBridge.runACO(fMatrix, ComparisonInputProps.acoPopSize, ComparisonInputProps.acoIterations, ComparisonInputProps.acoAlpha, ComparisonInputProps.acoBeta, ComparisonInputProps.acoRho);
                             const sa = optimizationBridge.runSA(fMatrix, ComparisonInputProps.saTmax, ComparisonInputProps.saTmin, ComparisonInputProps.saL);
                             const heldKarp = optimizationBridge.runHeldKarp(fMatrix);

@@ -122,7 +122,7 @@ ColumnLayout {
             }
 
             DropPanel {
-                title: "PSO"
+                title: "BCO"
 
                 Flow {
                     Layout.fillWidth: true
@@ -135,7 +135,7 @@ ColumnLayout {
                     Component.onCompleted: {
                         psoParams.append({
                             "prop": "psoSwarmSize",
-                            "name": "Swarm size",
+                            "name": "Bees number",
                             "value": ComparisonInputProps.psoSwarmSize,
                             "from": 1,
                             "to": 1000,
@@ -148,46 +148,6 @@ ColumnLayout {
                             "from": 1,
                             "to": 100000,
                             "step": 1
-                        });
-                        psoParams.append({
-                            "prop": "psoInitVelocity",
-                            "name": "Initial velocity",
-                            "value": ComparisonInputProps.psoInitVelocity,
-                            "from": 1,
-                            "to": 100000,
-                            "step": 1
-                        });
-                        psoParams.append({
-                            "prop": "psoInertiaWeight",
-                            "name": "Inertia weight (w)",
-                            "value": ComparisonInputProps.psoInertiaWeight,
-                            "from": 0,
-                            "to": 50,
-                            "step": 0.1
-                        });
-                        psoParams.append({
-                            "prop": "psoCognitiveCoef",
-                            "name": "Cognitive coef (c1)",
-                            "value": ComparisonInputProps.psoCognitiveCoef,
-                            "from": 0,
-                            "to": 50,
-                            "step": 0.01
-                        });
-                        psoParams.append({
-                            "prop": "psoSocialCoef",
-                            "name": "Social coef (c2)",
-                            "value": ComparisonInputProps.psoSocialCoef,
-                            "from": 0,
-                            "to": 50,
-                            "step": 0.01
-                        });
-                        psoParams.append({
-                            "prop": "psoVelocityClamping",
-                            "name": "Velocity clamping",
-                            "value": ComparisonInputProps.psoVelocityClamping,
-                            "from": 0,
-                            "to": 50,
-                            "step": 0.01
                         });
                     }
 

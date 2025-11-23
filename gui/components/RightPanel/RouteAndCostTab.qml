@@ -141,8 +141,8 @@ Column {
                         const iters = VariablesProps.psoIterations;
                         const seed = useSeed ? this.seed : -1;
 
-                        result = optimizationBridge.runPSO(fMatrix, swarmSize, initV, inertiaW, cognitiveCoef, socialCoef, velocityClamp, iters, seed);
-                        title.text = "PSO's Optimization";
+                        result = optimizationBridge.runBCO(fMatrix, swarmSize, initV, inertiaW, cognitiveCoef, socialCoef, velocityClamp, iters, seed);
+                        title.text = "BCO's Optimization";
                     }
 
                     const finiteAvgCosts = result.avgCostHist.filter(v => Number.isFinite(v));
