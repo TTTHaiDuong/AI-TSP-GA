@@ -158,11 +158,11 @@ class GA:
         }
     
 
-def run(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size, two_opt_max, max_iter, seed) -> OptimizationResult:
+def run(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size, two_opt_max, max_iter, seed, verbose=True) -> OptimizationResult:
     cost_matrix = np.asarray(cost_matrix, dtype=np.float64)
     ga = GA(cost_matrix, pop_size, crossover_rate, mutation_rate, elite_size, tournament_size, two_opt_max)
 
-    bench = time_memory_bench(ga.run, max_iter, seed)
+    bench = time_memory_bench(ga.run, max_iter, seed, verbose)
 
     return {
         "avgCostHist": [float(x) for x in bench["result"]["avg_cost_hist"]],
